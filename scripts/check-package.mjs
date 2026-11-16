@@ -10,5 +10,8 @@ for(const file of report.files){
  if(/private-[0-9a-f]{32}|gh[pousr]_[A-Za-z0-9]{20,}/i.test(data.toString('utf8')))throw new Error('Potential credential found in package.');
 }
 for(const required of exact)if(!report.files.some(f=>f.path===required))throw new Error('Missing package file: '+required);
-const source=await readFile(join(root,'installer/firmware/source.zip'));if(source.length<10000)throw new Error('Firmware source archive missing.');
+const source=await readFile(join(root,'installer/firmware/source.zip'));
+// Our generated ZIP has no comment. Reject incomplete writes before packaging.
+const end=source.length-22;
+if(source.length<10000||source.readUInt32LE(0)!==0x04034b50||source.readUInt32LE(end)!==0x06054b50||source.readUInt16LE(end+20)!==0||source.readUInt32LE(end+12)+source.readUInt32LE(end+16)!==end)throw new Error('Firmware source archive is missing or incomplete. Rebuild it before packaging.');
 console.log(`Package checked: ${report.files.length} allowed files, ${(report.size/1048576).toFixed(1)} MB compressed; firmware integrity passed.`);
