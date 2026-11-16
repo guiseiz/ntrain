@@ -12,7 +12,7 @@ Checked locally on November 14, 2026, with a Chrome chooser check on November 16
 - Downloadable `.tgz` launched with offline `npm exec` from an empty directory, without a project dependency install. Metadata and the browser setup page loaded successfully; both route controls rendered with no console errors.
 - Desktop Chrome opened the local installer and its native Web Serial chooser on November 16. The chooser correctly reported no compatible device while the E1001 was disconnected; cancellation returned to the setup page.
 
-The Python run reports three existing certificate-parsing deprecation warnings. GitHub Actions has been prepared but has not yet run remotely.
+The Python run reports three existing certificate-parsing deprecation warnings. GitHub Actions independently rebuilds and tests the firmware and installer on Linux; see [build results](https://github.com/guiseiz/ntrain/actions/workflows/ci.yml). The first Linux run exposed missing byte-swap header declarations in the native libical configuration, which are now enabled specifically for Linux builds.
 
 ## Hardware check still required
 

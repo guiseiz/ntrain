@@ -23,6 +23,10 @@
 #define HAVE_STRNCASECMP 1
 #define HAVE_SETENV 1
 #define HAVE_UNSETENV 1
+#ifdef __linux__
+#define HAVE_BYTESWAP_H 1
+#define HAVE_ENDIAN_H 1
+#endif
 #define ICAL_ERRORS_ARE_FATAL 0
 #define ICAL_ALLOW_EMPTY_PROPERTIES 0
 #define PACKAGE_DATA_DIR "/no-libical-tzdata"

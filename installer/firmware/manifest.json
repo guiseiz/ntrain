@@ -3,7 +3,7 @@
   "device": "reTerminal E1001",
   "chip": "ESP32-S3",
   "flash_size": "32MB",
-  "built_at": "2026-11-15T01:47:59.475Z",
+  "built_at": "2026-11-16T17:23:03.475Z",
   "parts": [
     {
       "file": "bootloader.bin",
