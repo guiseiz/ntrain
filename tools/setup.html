@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bring your day home · NTrain</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f1eb;color:#242722;font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1130px;margin:70px auto;padding:0 32px;display:grid;grid-template-columns:1fr 1fr;gap:80px}header{margin-bottom:40px}.badge{display:inline-flex;background:#252a24;color:white;width:40px;height:40px;align-items:center;justify-content:center;font-size:26px;font-weight:600;margin-right:12px}.wordmark{display:flex;align-items:center;letter-spacing:.1em;font-size:12px;font-weight:600}h1{font-size:49px;line-height:1.08;letter-spacing:-.045em;font-weight:500;margin:48px 0 20px}p{line-height:1.65;color:#63685e}.preview{margin:40px -12px 0;border:17px solid #d9d8d2;border-radius:14px;box-shadow:0 15px 35px #252a2412;width:calc(100% + 24px)}.caption{font-size:12px;color:#73786f;line-height:1.5}form{background:#fff;padding:34px;border:1px solid #dedfd7;border-radius:10px}h2{margin:0 0 8px;font-size:22px;letter-spacing:-.03em;font-weight:550}label{display:block;font-size:14px;font-weight:550;margin-top:25px}input,select{width:100%;padding:12px 13px;border:1px solid #cdd0c6;background:#fdfefb;color:#242722;border-radius:5px;font:inherit;margin-top:8px;outline-color:#638264}small{display:block;font-size:12px;color:#73786f;line-height:1.5;margin-top:7px}a{color:#426d48;text-underline-offset:3px}button{width:100%;padding:15px;background:#315538;color:#fff;border:0;border-radius:5px;font:inherit;font-weight:550;margin-top:30px;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.check{display:flex;gap:8px;align-items:center;font-weight:400}.check input{width:auto;margin:0}#status{font-size:14px;line-height:1.5;margin:16px 0 0}footer{font-size:12px;color:#74796f;line-height:1.6;margin-top:20px}.num{color:#648168;font-size:12px;letter-spacing:.08em}@media(max-width:800px){main{grid-template-columns:1fr;gap:35px;margin:30px auto;max-width:560px}h1{font-size:40px;margin-top:30px}.preview{margin-top:22px}}
+</style>
+<style>
+.connection{margin-top:22px;padding:13px 15px;border:1px solid #dedfd7;border-radius:5px;background:#f6f7f2;font-size:13px;line-height:1.5}.connection[data-connected="true"]{border-color:#bfd0bd;background:#edf5e9;color:#315538}.connection strong{display:block;font-weight:600;margin-bottom:3px}.connection[data-connected="false"]{border-color:#e2d2b4;background:#faf5e9;color:#76572b}button:disabled{cursor:default}
+.secondary{margin-top:10px;padding:11px;background:#f3f6ef;color:#315538;border:1px solid #ccd8c7;font-size:14px}#wifi-status{font-size:13px;line-height:1.5;margin-top:12px;color:#63685e}#wifi-status[data-ok="false"]{color:#8b492d}#wifi-status[data-ok="true"]{color:#315538}[hidden]{display:none!important}
+</style>
+<main><section><div class="wordmark"><span class="badge">N</span> A LITTLE CLOSER TO HOME</div><h1>Your next train.<br>Your family's day.</h1><p>Carl &amp; Cole, in both directions.<br>The next two trains each way, updated every 61 seconds on your home Wi-Fi.</p><img class="preview" src="/preview.png" alt="800 by 480 e-paper preview with trains on the left and family events on the right"><p class="caption">Preview uses demo data. The display will fetch real updates after setup.</p><footer>Keep the reTerminal connected by USB for this one-time setup. Afterward, it works by itself. This setup page runs only on your Mac.</footer></section>
+<section><form id="settings"><div class="num">ONE-TIME SETUP</div><h2 style="margin-top:10px">Make it yours.</h2><small>Details stay on this computer and your display.</small>
+<div id="connection" class="connection" role="status" aria-live="polite"><strong id="connection-title">Checking USB connection…</strong><span id="connection-detail">Keep the reTerminal connected while saving your settings.</span></div>
+<label for="ssid">Wi-Fi network</label><input id="ssid" name="ssid" autocomplete="off" maxlength="32" placeholder="Your 2.4 GHz network">
+<button class="secondary" type="button" id="scan" disabled>Scan nearby networks</button>
+<div id="network-picker" hidden><label for="networks">Networks the display can see</label><select id="networks"><option value="">Choose a network…</option></select></div>
+<label for="password">Wi-Fi password</label><input id="password" name="password" type="password" autocomplete="new-password" maxlength="64">
+<div class="row"><button class="secondary" type="button" id="test-wifi" disabled>Test Wi-Fi</button><button class="secondary" type="button" id="test-saved" disabled>Test saved Wi-Fi</button></div>
+<div id="wifi-status" role="status" aria-live="polite">Test Wi-Fi uses the details above. Test saved Wi-Fi checks what is already on your display. Neither changes your settings.</div>
+<label for="api_key">511 transit API key</label><input id="api_key" name="api_key" type="password" autocomplete="off" maxlength="128"><small>Paste the full value after <strong>“Here is your token”</strong> in the email from 511, including the hyphens. <a href="https://511.org/open-data/token" target="_blank" rel="noreferrer">Get a free key from 511</a>.</small>
+<label for="calendar_url">Calendar 1 calendar</label><input id="calendar_url" name="calendar_url" type="password" autocomplete="off" placeholder="Calendar ID, public URL, or iCal link" maxlength="2048"><small>For a <strong>public calendar</strong>, paste its ID or public/embed URL. For a <strong>private calendar</strong>, use Settings → your calendar → Integrate calendar → <strong>Secret address in iCal format</strong>. If it appears under “Other calendars”, the owner may need to provide that link. A public URL does not make a private calendar readable.</small>
+<label for="calendar_url_2">Calendar 2 calendar</label><input id="calendar_url_2" name="calendar_url_2" type="password" autocomplete="off" placeholder="Calendar ID, public URL, or iCal link" maxlength="2048"><small>Events from both calendars appear together, ordered by time. Leave either field empty to use just one.</small>
+<button class="secondary" type="button" id="test-calendar">Check both calendars</button><div id="calendar-status" role="status" aria-live="polite"></div>
+<div class="row"><div><label for="active_start">Trains start at</label><select id="active_start" name="active_start"></select></div><div><label for="active_end">Quiet after</label><select id="active_end" name="active_end"></select></div></div><small>Pacific time, including daylight saving. Calendar checks continue overnight at a lower frequency.</small>
+<label class="check"><input type="checkbox" id="mock">Use demo data for now</label>
+<button type="submit" id="submit" disabled>Test Wi-Fi &amp; save →</button><div id="status" role="status" aria-live="polite"></div>
+</form><footer>The calendar URL is a read-access secret. It is saved in the display's flash and in <code>private/config.json</code> on this Mac. Anyone with physical flash access could retrieve it. Google lets you reset the URL at any time.</footer></section></main>
+<script>
+for(const id of ['active_start','active_end']){const select=document.getElementById(id);for(let i=0;i<24;i++){const option=document.createElement('option');option.value=i;option.textContent=`${i%12||12}:00 ${i<12?'AM':'PM'}`;select.append(option)}select.value=id==='active_start'?6:23}
+let saving=false,checking=false,connected=false;
+function updateButtons(){for(const id of ['submit','scan','test-wifi','test-saved'])document.getElementById(id).disabled=saving||!connected}
+async function post(path,data){
+  const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Setup-Token':'__CSRF__'},body:JSON.stringify(data)});
+  const result=await response.json();
+  if(!response.ok)throw new Error(result.message||(response.status===403?'This setup session has expired. Reload the page before trying again.':'Setup could not complete. Try again.'));
+  return result;
+}
+document.getElementById('test-calendar').addEventListener('click',async()=>{
+  const button=document.getElementById('test-calendar'),status=document.getElementById('calendar-status');
+  button.disabled=true;status.textContent='Checking whether Google allows this calendar feed to be read…';
+  try{const result=await post('/calendar/test',{calendar_url:document.getElementById('calendar_url').value,calendar_url_2:document.getElementById('calendar_url_2').value});status.textContent=result.message}
+  catch(error){status.textContent=error.message}
+  finally{button.disabled=false}
+});
+async function checkConnection(){
+  if(saving||checking)return;
+  checking=true;
+  const box=document.getElementById('connection'),title=document.getElementById('connection-title'),detail=document.getElementById('connection-detail');
+  try{
+    const response=await fetch('/device',{signal:AbortSignal.timeout(4000)});
+    if(!response.ok)throw new Error('Unavailable');
+    const result=await response.json();connected=result.connected===true;
+    title.textContent=connected?'reTerminal connected by USB':'Waiting for reTerminal';
+    detail.textContent=result.message;
+  }catch{connected=false;title.textContent='Setup service unavailable';detail.textContent='Restart the local setup service, then reload this page.'}
+  finally{box.dataset.connected=String(connected);updateButtons();checking=false}
+}
+checkConnection();setInterval(checkConnection,5000);
+async function wifiAction(kind){
+  if(saving||!connected)return;saving=true;updateButtons();
+  const status=document.getElementById('wifi-status');delete status.dataset.ok;
+  status.textContent=kind==='scan'?'Scanning from the display…':'Testing the display’s Wi-Fi connection. This can take up to 45 seconds…';
+  try{
+    const data=kind==='test'?{ssid:document.getElementById('ssid').value,password:document.getElementById('password').value,mock:false}:{};
+    const result=await post('/wifi/'+(kind==='saved'?'saved-test':kind),data);
+    status.dataset.ok=String(result.ok===true);status.textContent=result.message;
+    if(kind==='scan'&&result.ok){
+      const select=document.getElementById('networks');select.replaceChildren(new Option('Choose a network…',''));
+      for(const network of result.networks){const signal=network.rssi>=-60?'strong signal':network.rssi>=-75?'fair signal':'weak signal';select.add(new Option(`${network.ssid} · ${signal}`,network.ssid))}
+      document.getElementById('network-picker').hidden=false;
+      if(!result.networks.length)status.textContent='No visible 2.4 GHz networks found. Move the display closer to the router, or enter a hidden network name manually.';
+    }
+  }catch(error){status.dataset.ok='false';status.textContent=error.message||'The setup service is unavailable.'}
+  finally{saving=false;updateButtons();checkConnection()}
+}
+document.getElementById('scan').addEventListener('click',()=>wifiAction('scan'));
+document.getElementById('test-wifi').addEventListener('click',()=>wifiAction('test'));
+document.getElementById('test-saved').addEventListener('click',()=>wifiAction('saved'));
+document.getElementById('networks').addEventListener('change',event=>{if(event.target.value)document.getElementById('ssid').value=event.target.value});
+for(const id of ['ssid','password'])document.getElementById(id).addEventListener('input',()=>{const status=document.getElementById('wifi-status');delete status.dataset.ok;status.textContent='Wi-Fi details changed. Test the connection before saving.'});
+document.getElementById('settings').addEventListener('submit',async event=>{
+  event.preventDefault();if(saving||!connected)return;
+  saving=true;const status=document.getElementById('status');updateButtons();
+  status.textContent='Checking calendar access and Wi-Fi before saving. Keep USB connected; this can take up to a minute…';
+  const data={};for(const key of ['ssid','password','api_key','calendar_url','calendar_url_2'])data[key]=document.getElementById(key).value;
+  data.calendar_url_2=data.calendar_url_2.trim();data.calendar_url=data.calendar_url.trim();data.api_key=data.api_key.trim();data.mock=document.getElementById('mock').checked;
+  data.active_start=Number(document.getElementById('active_start').value);data.active_end=Number(document.getElementById('active_end').value);
+  try{
+    const result=await post('/configure',data);status.textContent=result.message;
+    if(result.wifi_verified){const wifi=document.getElementById('wifi-status');wifi.dataset.ok='true';wifi.textContent='Wi-Fi connection verified and settings saved.'}
+  }catch(error){status.textContent=error.message||'The local setup service is unavailable. Restart it and try again.'}
+  finally{saving=false;updateButtons();checkConnection()}
+});
+</script></html>

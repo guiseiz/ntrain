@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "device": "reTerminal E1001",
+  "chip": "ESP32-S3",
+  "flash_size": "32MB",
+  "built_at": "2026-11-15T01:47:59.475Z",
+  "parts": [
+    {
+      "file": "bootloader.bin",
+      "address": 0,
+      "bytes": 15104,
+      "sha256": "b0c79256d59079a42e8728b134b2c70c088631258ef17b288e9e0f8b80f86e09"
+    },
+    {
+      "file": "partitions.bin",
+      "address": 32768,
+      "bytes": 3072,
+      "sha256": "57d8422a6bcde14bc21923d621760a88edcbac22118b5ab418b9b36f8a9545aa"
+    },
+    {
+      "file": "boot_app0.bin",
+      "address": 57344,
+      "bytes": 8192,
+      "sha256": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0"
+    },
+    {
+      "file": "ntrain-e1001.bin",
+      "address": 65536,
+      "bytes": 1250576,
+      "sha256": "c72aff268108d889044caed246d05f0ae08f88cf4bd95ee1f8e433665db5cde1"
+    }
+  ]
+}

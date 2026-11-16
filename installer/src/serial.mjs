@@ -1,0 +1,18 @@
+// Web Serial only: credentials travel directly from the local page to USB.
+export const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+export class SerialSession {
+  constructor(port){this.port=port;this.waiters=[];this.lines=[];this.closed=false;}
+  async open(){await this.port.open({baudRate:115200});this.reader=this.port.readable.getReader();this.writer=this.port.writable.getWriter();this.pump=this.readLoop();}
+  async readLoop(){let pending='';const decoder=new TextDecoder();try{while(!this.closed){const {value,done}=await this.reader.read();if(done)break;pending+=decoder.decode(value,{stream:true});if(pending.length>16384)pending=pending.slice(-8192);let at;while((at=pending.indexOf('\n'))>=0){const line=pending.slice(0,at).replace(/\r$/,'');pending=pending.slice(at+1);this.lines.push(line);if(this.lines.length>100)this.lines.shift();for(const w of [...this.waiters])if(w.match(line)){w.resolve(line);this.waiters.splice(this.waiters.indexOf(w),1);}}}}catch{if(!this.closed)this.fail(new Error('USB disconnected. Reconnect the display and retry.'));}finally{if(!this.closed)this.fail(new Error('USB connection closed. Reconnect the display.'));}}
+  fail(error){for(const w of this.waiters.splice(0))w.reject(error);}
+  waitFor(match,timeout=20000){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{this.waiters=this.waiters.filter(w=>w!==item);reject(new Error('The display did not respond. Close other serial monitors, reconnect USB, and retry.'));},timeout);const item={match,resolve:v=>{clearTimeout(timer);resolve(v);},reject:e=>{clearTimeout(timer);reject(e);}};this.waiters.push(item);});}
+  async send(line){await this.writer.write(new TextEncoder().encode(line+'\n'));}
+  async reset(){this.lines=[];await this.port.setSignals({dataTerminalReady:false,requestToSend:true});await sleep(150);await this.port.setSignals({requestToSend:false});}
+  async ready(){const ready=this.waitFor(l=>l==='NTRAIN_WIFI_SETUP_V1',20000);try{await this.reset();return await ready;}catch(error){this.fail(error);await ready.catch(()=>{});throw error;}}
+  async exchange(command,kind){await this.ready();const prefix=kind==='scan'?'NTRAIN_WIFI_SCAN_V1 ':kind==='wifi'?'NTRAIN_WIFI_RESULT_V1 ':'NTRAIN_CONFIG_SAVED_V1';
+    const result=this.waitFor(l=>l.startsWith(prefix)||l.startsWith('NTRAIN_CONFIG_REJECTED')||l==='NTRAIN_CONFIG_STORAGE_ERROR'||(kind==='save'&&l.startsWith('NTRAIN_WIFI_RESULT_V1 ')&&!JSON.parse(l.slice(22)).ok),65000);
+    try{await this.send(command);const line=await result;if(line.startsWith('NTRAIN_CONFIG_SAVED'))return {ok:true};if(line.startsWith('NTRAIN_CONFIG_'))throw new Error('The display rejected the settings. Check the fields and installed firmware version.');return JSON.parse(line.slice(line.indexOf(' ')+1));}catch(error){this.fail(error);await result.catch(()=>{});throw error;}
+  }
+  async close(){this.closed=true;this.fail(new Error('USB session closed.'));try{await this.reader?.cancel();await this.pump;}catch{}try{this.reader?.releaseLock();this.writer?.releaseLock();await this.port.close();}catch{}}
+}
+export const wifiMessage=r=>r.ok?'Wi-Fi connected. The display received a network address.':({network_not_found:'That 2.4 GHz network was not found. Check its name or scan again.',authentication_failed:'Wi-Fi authentication failed. Check the password.',association_failed:'The router refused the connection. Check its Wi-Fi settings.',dhcp_timeout:'Wi-Fi joined, but the router did not assign an address.',connection_timeout:'Wi-Fi timed out. Move the display closer and retry.'}[r.code]||'Wi-Fi could not connect. Check the network name and password.');

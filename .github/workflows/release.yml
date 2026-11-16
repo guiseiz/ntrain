@@ -1,0 +1,35 @@
+name: Draft release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check tag
+        run: node -e "if ('v'+JSON.parse(require('fs').readFileSync('package.json')).version!==process.env.GITHUB_REF_NAME) process.exit(1)"
+      - run: python -m venv .venv
+      - run: .venv/bin/pip install -r requirements.txt
+      - run: npm ci
+      - run: .venv/bin/pio run
+      - run: .venv/bin/python -m pytest -q
+      - run: .venv/bin/python tools/preview.py
+      - run: npm run build:installer
+      - run: .venv/bin/python tools/package_firmware_source.py
+      - run: npm run test:installer
+      - run: npm pack --pack-destination build
+      - run: cd build && sha256sum ntrain-setup-*.tgz > SHA256SUMS
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" build/ntrain-setup-*.tgz build/SHA256SUMS --draft --title "NTrain $GITHUB_REF_NAME" --notes-file docs/RELEASE_NOTES.md

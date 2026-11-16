@@ -1,0 +1,39 @@
+{
+  "name": "ntrain-setup",
+  "version": "0.1.0",
+  "description": "USB installer for a standalone Muni and calendar dashboard on reTerminal E1001",
+  "type": "module",
+  "license": "GPL-3.0-only",
+  "repository": {"type":"git","url":"git+https://github.com/guiseiz/ntrain.git"},
+  "homepage": "https://github.com/guiseiz/ntrain#readme",
+  "bugs": {"url":"https://github.com/guiseiz/ntrain/issues"},
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "ntrain-setup": "installer/cli.mjs"
+  },
+  "files": [
+    "installer/cli.mjs",
+    "installer/server.mjs",
+    "installer/config.mjs",
+    "installer/public",
+    "installer/firmware",
+    "installer/licenses",
+    "INSTALL.md",
+    "LICENSE",
+    "THIRD_PARTY.md"
+  ],
+  "scripts": {
+    "start": "node installer/cli.mjs",
+    "build:installer": "node scripts/build-installer.mjs",
+    "test:installer": "node --test installer/tests/*.test.mjs",
+    "pack:check": "node scripts/check-package.mjs",
+    "prepack": "node scripts/check-package.mjs"
+  },
+  "devDependencies": {
+    "esptool-js": "0.7.1",
+    "esbuild": "0.28.2",
+    "@noble/hashes": "2.4.0"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "ServiceDelivery": {
+    "ResponseTimestamp": "2026-11-13T21:59:36Z",
+    "ProducerRef": "SF",
+    "Status": true,
+    "StopMonitoringDelivery": {
+      "version": "1.4",
+      "ResponseTimestamp": "2026-11-13T21:59:36Z",
+      "Status": true,
+      "MonitoredStopVisit": [
+        {
+          "RecordedAtTime": "2026-11-13T21:59:23Z",
+          "MonitoringRef": "13911",
+          "MonitoredVehicleJourney": {
+            "LineRef": "N",
+            "DirectionRef": "IB",
+            "FramedVehicleJourneyRef": {
+              "DataFrameRef": "2026-11-13",
+              "DatedVehicleJourneyRef": "12136001_M11"
+            },
+            "PublishedLineName": "JUDAH",
+            "OperatorRef": "SF",
+            "OriginRef": "15223",
+            "OriginName": "Judah/La Playa/Ocean Beach",
+            "DestinationRef": "15239",
+            "DestinationName": "King St & 4th St",
+            "Monitored": true,
+            "InCongestion": null,
+            "VehicleLocation": {
+              "Longitude": "-122.467659",
+              "Latitude": "37.7621269"
+            },
+            "Bearing": "75.0000000000",
+            "Occupancy": "seatsAvailable",
+            "VehicleRef": "2079",
+            "MonitoredCall": {
+              "StopPointRef": "13911",
+              "StopPointName": "Carl St & Cole St",
+              "VehicleLocationAtStop": "",
+              "VehicleAtStop": "false",
+              "DestinationDisplay": "Caltrain/Ballpark",
+              "AimedArrivalTime": "2026-11-13T22:08:06Z",
+              "ExpectedArrivalTime": "2026-11-13T22:08:42Z",
+              "AimedDepartureTime": "2026-11-13T22:08:06Z",
+              "ExpectedDepartureTime": null,
+              "Distances": ""
+            }
+          }
+        },
+        {
+          "RecordedAtTime": "2026-11-13T21:59:23Z",
+          "MonitoringRef": "13911",
+          "MonitoredVehicleJourney": {
+            "LineRef": "N",
+            "DirectionRef": "IB",
+            "FramedVehicleJourneyRef": {
+              "DataFrameRef": "2026-11-13",
+              "DatedVehicleJourneyRef": "12136002_M11"
+            },
+            "PublishedLineName": "JUDAH",
+            "OperatorRef": "SF",
+            "OriginRef": "15223",
+            "OriginName": "Judah/La Playa/Ocean Beach",
+            "DestinationRef": "15239",
+            "DestinationName": "King St & 4th St",
+            "Monitored": true,
+            "InCongestion": null,
+            "VehicleLocation": {
+              "Longitude": "-122.496468",
+              "Latitude": "37.7608337"
+            },
+            "Bearing": "75.0000000000",
+            "Occupancy": "seatsAvailable",
+            "VehicleRef": "2070",
+            "MonitoredCall": {
+              "StopPointRef": "13911",
+              "StopPointName": "Carl St & Cole St",
+              "VehicleLocationAtStop": "",
+              "VehicleAtStop": "false",
+              "DestinationDisplay": "Caltrain/Ballpark",
+              "AimedArrivalTime": "2026-11-13T22:18:06Z",
+              "ExpectedArrivalTime": "2026-11-13T22:20:35Z",
+              "AimedDepartureTime": "2026-11-13T22:18:06Z",
+              "ExpectedDepartureTime": null,
+              "Distances": ""
+            }
+          }
+        },
+        {
+          "RecordedAtTime": "2026-11-13T21:59:23Z",
+          "MonitoringRef": "13911",
+          "MonitoredVehicleJourney": {
+            "LineRef": "N",
+            "DirectionRef": "IB",
+            "FramedVehicleJourneyRef": {
+              "DataFrameRef": "2026-11-13",
+              "DatedVehicleJourneyRef": "12136029_M11"
+            },
+            "PublishedLineName": "JUDAH",
+            "OperatorRef": "SF",
+            "OriginRef": "15223",
+            "OriginName": "Judah/La Playa/Ocean Beach",
+            "DestinationRef": "15239",
+            "DestinationName": "King St & 4th St",
+            "Monitored": true,
+            "InCongestion": null,
+            "VehicleLocation": {
+              "Longitude": "-122.509354",
+              "Latitude": "37.7601929"
+            },
+            "Bearing": "0.0000000000",
+            "Occupancy": "seatsAvailable",
+            "VehicleRef": "2184",
+            "MonitoredCall": {
+              "StopPointRef": "13911",
+              "StopPointName": "Carl St & Cole St",
+              "VehicleLocationAtStop": "",
+              "VehicleAtStop": "false",
+              "DestinationDisplay": "Caltrain/Ballpark",
+              "AimedArrivalTime": "2026-11-13T22:28:06Z",
+              "ExpectedArrivalTime": "2026-11-13T22:30:04Z",
+              "AimedDepartureTime": "2026-11-13T22:28:06Z",
+              "ExpectedDepartureTime": null,
+              "Distances": ""
+            }
+          }
+        }
+      ]
+    }
+  }
+}

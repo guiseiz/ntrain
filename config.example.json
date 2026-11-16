@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "mock": true,
+  "ssid": "YOUR_2_4_GHZ_WIFI",
+  "password": "YOUR_WIFI_PASSWORD",
+  "api_key": "YOUR_511_API_KEY",
+  "calendar_url": "",
+  "calendar_url_2": "",
+  "stop": "13911",
+  "stop_name": "Carl & Cole",
+  "route": "N",
+  "direction_ref": "",
+  "direction": "Downtown / Caltrain",
+  "timezone": "PST8PDT,M3.2.0,M11.1.0",
+  "transit_seconds": 61,
+  "calendar_seconds": 900,
+  "night_seconds": 1800,
+  "active_start": 6,
+  "active_end": 23
+}

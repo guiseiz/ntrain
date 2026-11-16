@@ -1,0 +1,14 @@
+.venv/
+.pio/
+.platformio/
+__pycache__/
+.pytest_cache/
+private/
+config.json
+client_secret*.json
+build/
+.DS_Store
+node_modules/
+*.tgz
+preview/setup-*.png
+preview/setup-*.jpg

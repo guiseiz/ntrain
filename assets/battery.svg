@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="17" height="12" viewBox="0 0 17 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Battery icon" clip-path="url(#clip0_0_19)">
+<path id="Vector" d="M0 0H15V3H17V9H15V12H0V0ZM2 2V10H13V2H2Z" fill-rule="evenodd" clip-rule="evenodd" fill="black"/>
+<path id="Vector_2" d="M3 3H9V9H3V3Z" fill="black"/>
+</g>
+<defs>
+<clipPath id="clip0_0_19">
+<rect width="17" height="12" fill="white"/>
+</clipPath>
+</defs>
+</svg>

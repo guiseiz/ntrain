@@ -1,0 +1,1 @@
+{"name":"libical","version":"3.0.20","build":{"flags":["-DHAVE_CONFIG_H","-DLIBICAL_ICAL_STATIC_DEFINE"]}}
