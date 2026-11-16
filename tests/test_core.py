@@ -105,7 +105,7 @@ def test_explicit_utc_zone(host,tmp_path):
 def test_unbounded_exrule_rejected(host,tmp_path):
     data=ics(event('UID:ex\nDTSTART:20200101T090000Z\nRRULE:FREQ=DAILY\nEXRULE:FREQ=SECONDLY\nSUMMARY:Invalid'))
     assert not call(host,tmp_path,'calendar',data)['ok']
-@pytest.mark.parametrize('bad',['not an ics feed','BEGIN:VCALENDAR\r\nVERSION:2.0\r\n', 'x'*(512*1024+1)])
+@pytest.mark.parametrize('bad',['not an ics feed','BEGIN:VCALENDAR\r\nVERSION:2.0\r\n', 'x'*(512*1024+1)],ids=['not-calendar','truncated','large-invalid'])
 def test_bad_calendar(host,tmp_path,bad):assert not call(host,tmp_path,'calendar',bad)['ok']
 def test_config_validation(host,tmp_path):
     good={'version':1,'mock':False,'ssid':'Example','calendar_url':'https://calendar.google.com/calendar/ical/example/private-token/basic.ics'}
