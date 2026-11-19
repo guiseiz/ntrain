@@ -1,6 +1,6 @@
 # Installer validation — 0.1.0
 
-Checked locally on November 14, 2026, with a Chrome chooser check on November 16. This record distinguishes software checks from a complete browser-to-device installation.
+Checked locally on November 14, 2026, with a Chrome chooser check on November 16 and direct USB hardware validation on November 19. This record distinguishes software and direct USB checks from a complete browser-to-device installation.
 
 ## Passed
 
@@ -14,9 +14,17 @@ Checked locally on November 14, 2026, with a Chrome chooser check on November 16
 
 The Python run reports three existing certificate-parsing deprecation warnings. GitHub Actions independently rebuilds and tests the firmware and installer on Linux; see [build results](https://github.com/guiseiz/ntrain/actions/workflows/ci.yml). The first Linux run exposed missing byte-swap header declarations in the native libical configuration, which are now enabled specifically for Linux builds.
 
-## Hardware check still required
+## Published firmware verified over USB — November 19, 2026
 
-The new browser flasher and provisioning flow have not yet completed an installation on a physical E1001. The Mac is unlocked and Chrome's chooser works, but no compatible USB device is currently connected. Mocked serial tests do not establish physical USB compatibility. Version 0.1.0 is distributed as a preview release while this check remains pending.
+- Connected a physical E1001 and flashed the four firmware regions from the published `ntrain-setup-0.1.0.tgz` using Python esptool. All written regions passed esptool's hash verification. This tests the released binary, not the browser flasher.
+- Published application image: **1,250,416 bytes**, SHA-256 `5b4255363c090d09b2b753ada9083d4146c789090b4885525d8178dd76ad1cf9`. The earlier local build above and the Linux release build have different binary hashes; this is the image actually installed in this check.
+- Backed up the NVS settings partition before flashing and read it again afterward. The active saved configuration was identical, including Wi-Fi, transit choices and both calendar subscriptions. Runtime cache/deadline writes changed other NVS bytes. Backups and raw logs remain private and are excluded from git and the package.
+- The installed firmware reported version `0.1.0` and the `transit-rows-v1` capability, restored both calendar caches, and connected to saved Wi-Fi.
+- Requested a calendar refresh over USB without saving configuration. Both HTTPS feeds parsed successfully: 16 and 6 upcoming events, with 16 merged events and `incomplete=0`. Firmware reported a completed display refresh, 9,388 bytes of free stack, and 1,788 seconds of deep sleep. This was during the configured quiet hours; live transit polling and the subsequent autonomous wake were not observed in this session.
+
+## Browser installation check still required
+
+The new browser flasher and provisioning flow have not yet completed an installation on a physical E1001. Chrome was being used concurrently during the November 19 session, so the browser USB check was deferred. Direct USB flashing and mocked serial tests do not establish that the browser installation flow works end to end. Version 0.1.0 remains a preview release while this check is pending.
 
 Before marking the release stable, use an unlocked computer and desktop Chrome or Edge to choose an E1001, install firmware, reconnect to settings, scan and test Wi-Fi, save choices, verify live arrivals and calendars, then verify an autonomous wake with the computer disconnected. Preserve existing selections when testing an already-configured display.
 
