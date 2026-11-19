@@ -8,6 +8,7 @@ Checked locally on November 14, 2026, with a Chrome chooser check on November 16
 - Native framebuffer previews show the retained-arrival message only once, in the bottom footer. All train numbers, arrival clocks and row positions remain unchanged.
 - The local firmware build is **1,252,352 bytes**, SHA-256 `c01a0ef8956a8b3f34d08d92cab09175fd232ad24ce32f6e8226e015e015b4ed`. It was flashed to the E1001 with all region hashes verified. USB disconnected after the successful upload; the cache migration and restart check remain pending.
 - Rebuilt browser assets, bundled firmware and source archive. Package checks pass with the explicit 28-file allowlist and matching firmware hashes.
+- [GitHub's release build](https://github.com/guiseiz/ntrain/actions/runs/44505690446) also passed. Downloaded the resulting archive, verified its checksum, all four firmware hashes, source archive integrity, correspondence with the changed source files and exclusion of private credentials. Its CLI reports 0.1.1. The published Linux-built application is **1,252,192 bytes**, SHA-256 `c2c21449102ede2e36a898947a082ecfcb24d49a4986751f3fcb08d65dcd5187`; the hardware upload above used the local build of the same source. The [0.1.1 release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.1) remains a preview.
 
 ## Version 0.1.0 software checks
 
