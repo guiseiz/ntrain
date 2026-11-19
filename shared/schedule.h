@@ -23,11 +23,13 @@ inline int sleepSeconds(int64_t now,int64_t nextWork,const Snapshot&s){
     auto expiry=[&](int64_t deadline){
         // Only expiry redraws need a lead time. A network request should wake at
         // its actual due time; waking early caused extra render/sleep cycles.
-        if(deadline>now+DISPLAY_REFRESH_SECONDS)next=std::min(next,deadline-DISPLAY_REFRESH_SECONDS);
+        if(deadline>now)next=std::min(next,std::max(now+1,deadline-DISPLAY_REFRESH_SECONDS));
     };
     // Train history is replaced by received predictions, never an expiry frame.
     expiry(s.calendarValid);
-    for(int i=0;i<s.eventCount;i++)expiry(s.events[i].end);
+    // An event can finish during the panel refresh, after the snapshot was
+    // filtered. Wake promptly in that case instead of waiting for the network.
+    for(int i=0;i<s.eventCount;i++)next=std::min(next,std::max(now+1,s.events[i].end-DISPLAY_REFRESH_SECONDS));
     return std::max(int64_t(1),next-now);
 }
 }

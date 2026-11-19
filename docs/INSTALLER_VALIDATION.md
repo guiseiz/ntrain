@@ -1,8 +1,15 @@
-# Installer validation — 0.1.0
+# Installer validation
 
 Checked locally on November 14, 2026, with a Chrome chooser check on November 16 and direct USB hardware validation on November 19. This record distinguishes software and direct USB checks from a complete browser-to-device installation.
 
-## Passed
+## Version 0.1.1 — November 19, 2026
+
+- 129 native/Python tests and 16 Node installer tests pass. New coverage checks completed events from both cached feeds, ongoing/all-day events, expiry during a panel refresh, intact retained train rows, compact-cache round trips, maximum-size caches and rejection of damaged cache data.
+- Native framebuffer previews show the retained-arrival message only once, in the bottom footer. All train numbers, arrival clocks and row positions remain unchanged.
+- The local firmware build is **1,252,352 bytes**, SHA-256 `c01a0ef8956a8b3f34d08d92cab09175fd232ad24ce32f6e8226e015e015b4ed`. It was flashed to the E1001 with all region hashes verified. USB disconnected after the successful upload; the cache migration and restart check remain pending.
+- Rebuilt browser assets, bundled firmware and source archive. Package checks pass with the explicit 28-file allowlist and matching firmware hashes.
+
+## Version 0.1.0 software checks
 
 - 113 native/Python tests, including independent route, stop and direction matching; identical row selections; backward-compatible configuration; calendar merge/recurrence; scheduling and retained arrivals.
 - 16 Node installer tests: configuration and calendar URL validation, packaged firmware integrity, sparse flash regions that exclude NVS, mocked USB acknowledgements/failures, local-server origin protections and calendar response limits.
@@ -22,10 +29,14 @@ The Python run reports three existing certificate-parsing deprecation warnings. 
 - The installed firmware reported version `0.1.0` and the `transit-rows-v1` capability, restored both calendar caches, and connected to saved Wi-Fi.
 - Requested a calendar refresh over USB without saving configuration. Both HTTPS feeds parsed successfully: 16 and 6 upcoming events, with 16 merged events and `incomplete=0`. Firmware reported a completed display refresh, 9,388 bytes of free stack, and 1,788 seconds of deep sleep. This was during the configured quiet hours; live transit polling and the subsequent autonomous wake were not observed in this session.
 
-## Browser installation check still required
+## Browser firmware installation verified — November 19, 2026
 
-The new browser flasher and provisioning flow have not yet completed an installation on a physical E1001. Chrome was being used concurrently during the November 19 session, so the browser USB check was deferred. Direct USB flashing and mocked serial tests do not establish that the browser installation flow works end to end. Version 0.1.0 remains a preview release while this check is pending.
+After Chrome became available, the physical E1001 was selected in its Web Serial chooser. The published 0.1.0 installer completed firmware flashing to 100%, automatically reconnected, and displayed `NTrain 0.1.0 connected`. Its Wi-Fi scan returned nearby networks. The form remained empty and was not saved. After releasing the browser's USB connection, another NVS read confirmed that the active configuration still matched the original backup exactly. Firmware reconnected to saved Wi-Fi, rendered and entered deep sleep.
 
-Before marking the release stable, use an unlocked computer and desktop Chrome or Edge to choose an E1001, install firmware, reconnect to settings, scan and test Wi-Fi, save choices, verify live arrivals and calendars, then verify an autonomous wake with the computer disconnected. Preserve existing selections when testing an already-configured display.
+The restart check also exposed `NOT_ENOUGH_SPACE` errors in the earlier calendar-save logs: a successful fetch updated RAM, but the full raw calendar blobs could not replace their older copies in NVS. Version 0.1.1 addresses this with bounded compact cache storage while retaining compatibility with existing caches.
+
+## First-time provisioning check still required
+
+Browser Wi-Fi credential testing and saving the complete form have not been exercised on a fresh physical installation. The existing user's configuration was preserved rather than replaced with test choices. Before marking the release stable, complete those steps, verify live arrivals and calendars, then verify an autonomous wake with the computer disconnected. These remaining checks keep the release in preview status.
 
 The existing dashboard firmware and hardware have a separate [validation history](VALIDATION.md). That history does not substitute for testing this installer end to end.

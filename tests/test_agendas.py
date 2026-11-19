@@ -1,5 +1,5 @@
 """Merge two sources without overwriting or losing the other source's cache."""
-from test_core import call,ics,event,NOW
+from test_core import call,ics,event,NOW,epoch
 
 def agenda(host,tmp_path,updates,**options):
     rows=[]
@@ -54,3 +54,19 @@ def test_recurring_and_all_day_events_from_both_sources(host,tmp_path):
     r=agenda(host,tmp_path,[(0,ics(a),NOW),(1,ics(b),NOW)])
     assert [e['title'] for e in r['events']]==['Daily','All day','Daily']
     assert r['events'][1]['all_day']
+
+def test_finished_morning_events_expire_from_both_persisted_sources(host,tmp_path):
+    morning=epoch('2026-11-05T15:00:00Z') # 7 AM Pacific
+    dropoff=event('UID:school\nDTSTART;TZID=America/Los_Angeles:20261105T073000\nDTEND;TZID=America/Los_Angeles:20261105T080000\nRRULE:FREQ=DAILY;COUNT=2\nSUMMARY:School drop-off')
+    appointment=event('UID:appt\nDTSTART;TZID=America/Los_Angeles:20261105T090000\nDTEND;TZID=America/Los_Angeles:20261105T100000\nSUMMARY:Morning appointment')
+    evening=event('UID:dinner\nDTSTART;TZID=America/Los_Angeles:20261105T180000\nDTEND;TZID=America/Los_Angeles:20261105T190000\nSUMMARY:Dinner')
+    all_day=event('UID:day\nDTSTART;VALUE=DATE:20261105\nDTEND;VALUE=DATE:20261106\nSUMMARY:All day')
+    r=agenda(host,tmp_path,[(0,ics(dropoff),morning),(1,ics(appointment+evening+all_day),morning)],persist=True,display_now=epoch('2026-11-06T01:00:00Z'))
+    assert [e['title'] for e in r['events']]==['All day','Dinner','School drop-off']
+    assert r['events'][-1]['start']==epoch('2026-11-06T15:30:00Z') # tomorrow's occurrence
+
+def test_event_disappears_at_its_end_time_even_if_refresh_fails(host,tmp_path):
+    text=ics(one('event','Finishing'))
+    end=epoch('2026-11-05T02:00:00Z')
+    updates=[(0,text,NOW),(1,ics(''),NOW),(0,'broken feed',end)]
+    assert not agenda(host,tmp_path,updates,persist=True,display_now=end).get('events')

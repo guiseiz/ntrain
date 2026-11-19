@@ -13,6 +13,7 @@
 #include "alerts.h"
 #include "calendar.h"
 #include "agenda.h"
+#include "agenda_storage.h"
 #include "render.h"
 #include "schedule.h"
 #include "network.h"
@@ -105,7 +106,7 @@ void serialSetup(uint32_t milliseconds){
                 if(line=="PING"){Serial.println("NTRAIN_READY_V1");Serial.println("NTRAIN_WIFI_SETUP_V1");}
                 else if(line=="STATUS"){
                     JsonDocument status;status["clock"]=time(nullptr);
-                    status["firmware_version"]="0.1.0";
+                    status["firmware_version"]="0.1.1";
                     status["capabilities"].add("transit-rows-v1");
                     for(int i=0;i<2;i++){
                         auto source=status["calendars"].add<JsonObject>();
@@ -195,9 +196,15 @@ void setup(){
         for(int i=0;i<2;i++){
             calendars[i]=CalendarCache{};calendarRetry[i]=Retry{};
             auto& cache=calendars[i];
-            if(prefs.getBytesLength(CAL_CACHE_KEYS[i])==sizeof(cache)){
+            size_t storedSize=prefs.getBytesLength(CAL_CACHE_KEYS[i]);
+            if(storedSize==sizeof(cache)){
+                // Read existing installations; replace with compact storage on
+                // the next successful sync, without deleting the old cache first.
                 prefs.getBytes(CAL_CACHE_KEYS[i],&cache,sizeof(cache));
                 if(cache.version!=1||cache.count<0||cache.count>MAX_EVENTS)cache=CalendarCache{};
+            }else if(storedSize&&storedSize<=AGENDA_STORAGE_MAX){
+                std::vector<uint8_t> bytes(storedSize);
+                if(prefs.getBytes(CAL_CACHE_KEYS[i],bytes.data(),bytes.size())==bytes.size())decodeAgenda(bytes.data(),bytes.size(),cache);
             }
             calendarRetry[i].next=prefs.getLong64(CAL_RETRY_KEYS[i],0);
         }
@@ -288,7 +295,9 @@ void setup(){
                     if(response.ok()&&parseCalendar(response.body,time(nullptr),*parsed,parseError)){
                         retry.success(time(nullptr),active?config.calendarSeconds:std::max(config.calendarSeconds,config.nightSeconds));
                         saveAgenda(calendars[i],*parsed,url);
-                        if(prefs.putBytes(CAL_CACHE_KEYS[i],&calendars[i],sizeof(CalendarCache))!=sizeof(CalendarCache))Serial.printf("CALENDAR_CACHE_ERROR source=%d\n",i+1);
+                        auto stored=encodeAgenda(calendars[i]);
+                        if(stored.empty()||prefs.putBytes(CAL_CACHE_KEYS[i],stored.data(),stored.size())!=stored.size())Serial.printf("CALENDAR_CACHE_ERROR source=%d\n",i+1);
+                        else Serial.printf("CALENDAR_CACHE_SAVED source=%d bytes=%u\n",i+1,unsigned(stored.size()));
                         Serial.printf("CALENDAR_OK source=%d events=%d bytes=%u\n",i+1,calendars[i].count,unsigned(response.body.size()));
                     }else{
                         retry.failure(time(nullptr),config.calendarSeconds,response.retryAfter);

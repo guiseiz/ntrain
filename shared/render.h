@@ -107,8 +107,6 @@ inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& 
                     g.bitmap(arrow,y+55,trainNextIcon,trainNextIconWidth,trainNextIconHeight);
                 }
             }
-            if(rowStale(row,v.now)&&!s.transitMock)
-                g.top(M,y+142,"Last received "+clockText(row.received),smallFont,CW);
         }else{
             g.top(M,y+50,v.setup?"Connect Wi-Fi to begin":"Waiting for first times",bodyFont,CW);
         }

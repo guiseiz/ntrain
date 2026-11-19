@@ -127,6 +127,10 @@ def test_train_expiry_never_schedules_an_interstitial(host,tmp_path):
     assert r['departure_wake']==61
     assert r['observation_expiry_wake']==61
 
+def test_finished_events_redraw_without_waiting_for_network(host,tmp_path):
+    r=call(host,tmp_path,'schedule','')
+    assert r['event_end_wakes']==[27,1,1,1,1,1]
+
 @pytest.mark.parametrize('mode',['stale','offline','night'])
 def test_last_received_times_keep_the_direction_rows(host,tmp_path,mode):
     from PIL import Image
@@ -136,8 +140,17 @@ def test_last_received_times_keep_the_direction_rows(host,tmp_path,mode):
         return Image.open(path).copy()
     normal=render('mock');retained=render(mode)
     # Exact same received numbers, clocks, labels and separators, even after expiry.
-    for box in [(32,116,376,250),(32,289,376,423),(32,272,376,273)]:
+    for box in [(32,116,376,443)]:
         assert retained.crop(box).tobytes()==normal.crop(box).tobytes()
+
+def test_finished_event_does_not_take_a_visible_agenda_slot(host,tmp_path):
+    from PIL import Image
+    images=[]
+    for mode in ['agenda-finished','agenda-filtered']:
+        path=tmp_path/(mode+'.pbm')
+        subprocess.run([str(host),'preview',str(path),str(NOW),mode],check=True)
+        images.append(Image.open(path).crop((424,100,768,429)).tobytes())
+    assert images[0]==images[1]
 
 def test_valid_cached_times_stay_visible_when_offline(host,tmp_path):
     from PIL import Image
