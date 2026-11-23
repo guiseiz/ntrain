@@ -18,7 +18,7 @@ inline int64_t nextActive(int64_t now,const Config&c){
     time_t t=now;tm local{};localtime_r(&t,&local);local.tm_min=0;local.tm_sec=0;local.tm_hour=c.activeStart;local.tm_isdst=-1;
     int64_t next=mktime(&local);if(next<=now){local.tm_mday++;local.tm_isdst=-1;next=mktime(&local);}return next;
 }
-inline int sleepSeconds(int64_t now,int64_t nextWork,const Snapshot&s){
+inline int sleepSeconds(int64_t now,int64_t nextWork,const Snapshot&s,bool calendarsEnabled=true){
     int64_t next=nextWork;
     auto expiry=[&](int64_t deadline){
         // Only expiry redraws need a lead time. A network request should wake at
@@ -26,10 +26,10 @@ inline int sleepSeconds(int64_t now,int64_t nextWork,const Snapshot&s){
         if(deadline>now)next=std::min(next,std::max(now+1,deadline-DISPLAY_REFRESH_SECONDS));
     };
     // Train history is replaced by received predictions, never an expiry frame.
-    expiry(s.calendarValid);
+    if(calendarsEnabled)expiry(s.calendarValid);
     // An event can finish during the panel refresh, after the snapshot was
     // filtered. Wake promptly in that case instead of waiting for the network.
-    for(int i=0;i<s.eventCount;i++)next=std::min(next,std::max(now+1,s.events[i].end-DISPLAY_REFRESH_SECONDS));
+    if(calendarsEnabled)for(int i=0;i<s.eventCount;i++)next=std::min(next,std::max(now+1,s.events[i].end-DISPLAY_REFRESH_SECONDS));
     return std::max(int64_t(1),next-now);
 }
 }

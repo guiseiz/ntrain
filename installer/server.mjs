@@ -32,7 +32,7 @@ export async function loadFirmware(root=ROOT){
 }
 export async function startServer({port=0,root=ROOT,fetchImpl=fetch}={}){
   const manifest=await loadFirmware(root);const token=randomBytes(32).toString('hex');let origin;
-  const routes=new Map([['/','public/index.html'],['/app.js','public/app.js'],['/style.css','public/style.css'],['/preview.png','public/preview.png'],['/catalog.json','public/catalog.json'],['/firmware/manifest.json','firmware/manifest.json'],...manifest.parts.map(p=>['/firmware/'+p.file,'firmware/'+p.file])]);
+  const routes=new Map([['/','public/index.html'],['/app.js','public/app.js'],['/style.css','public/style.css'],['/preview.png','public/preview.png'],['/preview-trains.png','public/preview-trains.png'],['/catalog.json','public/catalog.json'],['/firmware/manifest.json','firmware/manifest.json'],...manifest.parts.map(p=>['/firmware/'+p.file,'firmware/'+p.file])]);
   const server=http.createServer(async(req,res)=>{
     const respond=(status,data,type='application/json')=>{res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'",'Permissions-Policy':'serial=(self)'});res.end(typeof data==='string'||Buffer.isBuffer(data)?data:JSON.stringify(data));};
     if(req.headers.host!==new URL(origin).host)return respond(403,{message:'Invalid setup origin.'});

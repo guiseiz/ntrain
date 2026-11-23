@@ -2,7 +2,11 @@
 
 A standalone Muni arrivals and Google Calendar dashboard for the **Seeed Studio reTerminal E1001**. Two configurable transit rows, six upcoming events, and a local USB installer. After setup, the display runs on home Wi-Fi without a computer or cloud gateway.
 
+Choose **Trains + calendars**, or **Trains only** with one direction on the left and the other on the right. Both layouts show the next two arrivals for each selection and share one transit request every 61 seconds during active hours. Trains-only mode does not fetch calendars.
+
 ![Dashboard preview](preview/mock.png)
+
+![Trains-only preview](preview/trains.png)
 
 ## Install on your display
 
@@ -10,10 +14,10 @@ You need a monochrome reTerminal E1001, a USB **data** cable, Node.js 22 or late
 
 **Preview release:** browser firmware installation, reconnection and Wi-Fi scanning have passed on physical hardware. The complete first-time provisioning flow still needs validation. See the [validation record](docs/INSTALLER_VALIDATION.md).
 
-Run the installer directly from this project's [GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.2):
+Run the installer directly from this project's [GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.3):
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.2/ntrain-setup-0.1.2.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.3/ntrain-setup-0.1.3.tgz ntrain-setup
 ```
 
 Or clone the source:
@@ -29,7 +33,7 @@ The prebuilt installer and firmware are included. End users do **not** need `npm
 From a downloaded release package:
 
 ```sh
-npx --yes --package=./ntrain-setup-0.1.2.tgz ntrain-setup
+npx --yes --package=./ntrain-setup-0.1.3.tgz ntrain-setup
 ```
 
 This uses the package attached to our GitHub release. It is not published to the npm registry under the unscoped `ntrain-setup` name.
@@ -37,7 +41,7 @@ This uses the package attached to our GitHub release. It is not published to the
 1. Open the local address in Chrome or Edge and choose the USB display.
 2. Install the firmware. Keep USB connected during the approximately 90-second upload.
 3. Scan for your 2.4 GHz Wi-Fi network and test the password.
-4. Choose a Muni line, direction, and stop for **each of the two rows**. Use the same line twice or mix two lines.
+4. Choose your display layout, then a Muni line, direction, and stop for **each of the two rows or sides**. Use the same line twice or mix two lines.
 5. Add your own [free 511 API key](https://511.org/open-data/token), and optionally one or two Google Calendar subscription links.
 6. Choose active hours, then **Test Wi-Fi & save to display**.
 

@@ -3,7 +3,7 @@ from PIL import Image
 import subprocess
 def main():
     binary=build()
-    for mode in ['mock','stale','offline','empty','setup','night','wide','agenda-days','agenda-same-day']:
+    for mode in ['mock','stale','offline','empty','setup','night','wide','agenda-days','agenda-same-day','trains','trains-wide','trains-mixed']:
         pbm=ROOT/f'preview/{mode}.pbm'
         subprocess.run([str(binary),'preview',str(pbm),'1793839320',mode],check=True)
         Image.open(pbm).save(pbm.with_suffix('.png'))

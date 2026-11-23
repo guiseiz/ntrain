@@ -107,8 +107,10 @@ void serialSetup(uint32_t milliseconds){
                 if(line=="PING"){Serial.println("NTRAIN_READY_V1");Serial.println("NTRAIN_WIFI_SETUP_V1");}
                 else if(line=="STATUS"){
                     JsonDocument status;status["clock"]=time(nullptr);
-                    status["firmware_version"]="0.1.2";
+                    status["firmware_version"]="0.1.3";
                     status["capabilities"].add("transit-rows-v1");
+                    status["capabilities"].add("display-modes-v1");
+                    status["display_mode"]=config.displayMode;
                     for(int i=0;i<2;i++){
                         auto source=status["calendars"].add<JsonObject>();
                         source["configured"]=!calendarUrlAt(config,i).empty();source["cached_events"]=calendars[i].count;
@@ -237,7 +239,7 @@ void setup(){
     bool hasClock=now>=1700000000;
     bool active=!hasClock||activeAt(now,config);
     bool needTransit=active&&!config.apiKey.empty()&&now+NETWORK_WAKE_LEAD>=std::max(apiPause,transitRetry.next);
-    bool needCalendar=false;for(int i=0;i<2;i++)needCalendar|=!calendarUrlAt(config,i).empty()&&calendarRetry[i].due(now);
+    bool needCalendar=false;for(int i=0;i<2;i++)needCalendar|=calendarEnabled(config,i)&&calendarRetry[i].due(now);
     bool needTime=!hasClock||now-lastClockSync>86400;
     bool wantsNetwork=(needTransit||needCalendar||needTime)&&(!hasClock||wifiRetry.due(now));
     View view;view.now=now;view.wifi=previousWifi;view.quiet=!active;view.batteryMv=batteryMv();
@@ -288,7 +290,7 @@ void setup(){
                 }
                 for(int i=0;i<2;i++){
                     const auto& url=calendarUrlAt(config,i);auto& retry=calendarRetry[i];
-                    if(url.empty()||!retry.due(time(nullptr)))continue;
+                    if(!calendarEnabled(config,i)||!retry.due(time(nullptr)))continue;
                     retry.next=time(nullptr)+config.calendarSeconds;prefs.putLong64(CAL_RETRY_KEYS[i],retry.next);
                     Serial.printf("CALENDAR_FETCH source=%d\n",i+1);
                     auto response=getHttps(url,CALENDAR_MAX_BYTES);std::string parseError;
@@ -322,9 +324,9 @@ void setup(){
     int64_t next=now+(active?config.transitSeconds:config.nightSeconds);
     if(active&&!config.apiKey.empty())next=transitWake(now,std::max(transitRetry.next,apiPause));
     if(!active)next=std::min(next,nextActive(now,config));
-    for(int i=0;i<2;i++)if(!calendarUrlAt(config,i).empty())next=std::min(next,std::max(now+5,calendarRetry[i].next));
+    for(int i=0;i<2;i++)if(calendarEnabled(config,i))next=std::min(next,std::max(now+5,calendarRetry[i].next));
     if(!previousWifi&&wifiRetry.next>now)next=std::max(next,wifiRetry.next);
     if(!hasClock)next=now+300;
-    sleepFor(sleepSeconds(now,next,snapshot));
+    sleepFor(sleepSeconds(now,next,snapshot,config.displayMode!="trains"));
 }
 void loop(){}

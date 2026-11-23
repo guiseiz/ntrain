@@ -66,17 +66,23 @@ inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& 
     expire(s,v.now);
     TrainBoard fallback=boardFromSnapshot(source,source.transitUpdated);
     const TrainBoard& trains=history?*history:fallback;
-    constexpr int M=32,L=376,C=424,R=768,CW=344;
+    constexpr int M=32,C=424,CW=344;
+    const bool trainsOnly=c.displayMode=="trains";
     // Figma 43:455: direction rows, each with the next two arrivals.
     // Retain the requested Inter text and Geist Mono Light (300) numerals.
-    std::string badge=rowRoute(c,0)==rowRoute(c,1)?c.route:"M";
-    const Font& badgeFont=g.width(badge,routeFont)<=48?routeFont:g.width(badge,titleFont)<=48?titleFont:bodyFont;
-    g.rect(M,28,55,55);g.top(M+(55-g.width(badge,badgeFont))/2,43+(routeFont.capHeight-badgeFont.capHeight)/2,badge,badgeFont,48,false);
-    g.top(105,47,c.stopName,titleFont,271);
-    g.top(C,32,"Family calendar",titleFont,CW);
-    time_t stamp=v.now;tm local{};localtime_r(&stamp,&local);char date[40];
-    strftime(date,sizeof(date),"%A, %b %e",&local);
-    g.top(C,66,v.now?date:"Your upcoming week",bodyFont,CW);
+    auto header=[&](int x,const std::string& badge){
+        const Font& badgeFont=g.width(badge,routeFont)<=48?routeFont:g.width(badge,titleFont)<=48?titleFont:bodyFont;
+        g.rect(x,28,55,55);g.top(x+(55-g.width(badge,badgeFont))/2,43+(routeFont.capHeight-badgeFont.capHeight)/2,badge,badgeFont,48,false);
+        g.top(x+73,47,c.stopName,titleFont,271);
+    };
+    header(M,trainsOnly?rowRoute(c,0):rowRoute(c,0)==rowRoute(c,1)?c.route:"M");
+    if(trainsOnly)header(C,rowRoute(c,1));
+    else{
+        g.top(C,32,"Family calendar",titleFont,CW);
+        time_t stamp=v.now;tm local{};localtime_r(&stamp,&local);char date[40];
+        strftime(date,sizeof(date),"%A, %b %e",&local);
+        g.top(C,66,v.now?date:"Your upcoming week",bodyFont,CW);
+    }
     g.line(M,99,CW);g.line(C,99,CW);g.rect(400,28,1,401);
     const Font* number=&bigFont;int unit=g.width("min",unitFont);
     for(const Font* font:{&bigFont,&compactFont,&narrowFont,&tinyNumberFont}){
@@ -88,59 +94,62 @@ inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& 
         if(fits)break;
     }
     for(int direction=0;direction<2;direction++){
-        const auto& row=trains.rows[direction];int y=direction?289:116;
+        const auto& row=trains.rows[direction];int y=trainsOnly?174:direction?289:116;
+        const int left=trainsOnly&&direction?C:M,right=left+CW,offset=left-M;
         std::string label=direction?c.outboundDirection:c.direction;
-        if(rowRoute(c,0)!=rowRoute(c,1))label=rowRoute(c,direction)+" / "+label;
-        g.top(M,y,label,smallFont,CW);
+        if(!trainsOnly&&rowRoute(c,0)!=rowRoute(c,1))label=rowRoute(c,direction)+" / "+label;
+        g.top(left,y,label,smallFont,CW);
         if(row.count){
             std::string values[2];for(int i=0;i<row.count;i++)values[i]=std::to_string(row.minutes[i]);
             for(int i=0;i<row.count;i++){
-                int x=i?204:M;
+                int x=offset+(i?204:M);
                 // Bottom-align smaller numerals when two multi-digit values need room.
                 g.top(x,y+103-number->capHeight,values[i],*number,CW);
                 int after=x+g.width(values[i],*number)+6;
-                bool showUnit=i||row.count==1||after+unit<=144;
-                if(showUnit)g.top(after,y+86,"min",unitFont,L-after);
-                g.top(x,y+117,clockText(row.arrivals[i].at),departureFont,L-x);
+                bool showUnit=i||row.count==1||after+unit<=offset+144;
+                if(showUnit)g.top(after,y+86,"min",unitFont,right-after);
+                g.top(x,y+117,clockText(row.arrivals[i].at),departureFont,right-x);
                 if(i==0&&row.count>1){
-                    int arrow=showUnit?156:172;
+                    int arrow=offset+(showUnit?156:172);
                     g.bitmap(arrow,y+55,trainNextIcon,trainNextIconWidth,trainNextIconHeight);
                 }
             }
         }else{
-            g.top(M,y+50,v.setup?"Connect Wi-Fi to begin":"Waiting for first times",bodyFont,CW);
+            g.top(left,y+50,v.setup?"Connect Wi-Fi to begin":"Waiting for first times",bodyFont,CW);
         }
     }
-    g.line(M,272,CW);
-    if(s.eventCount==0){
-        g.text(C,132,s.calendarUpdated?"THIS WEEK":"YOUR AGENDA",smallFont,CW);
-        g.wrapped(C,185,s.calendarUpdated?"A little room in the day.":"Your calendar belongs here.",titleFont,CW,37,2);
-        g.wrapped(C,280,s.calendarUpdated?"No upcoming events in the next 7 days.":"Add your private Google Calendar subscription link.",bodyFont,CW,29,3);
-    }
-    const int visibleEvents=std::min(6,s.eventCount);
-    int dayGroups=0;std::string previousDay;
-    for(int i=0;i<visibleEvents;i++){
-        std::string day=eventDay(s.events[i].start,v.now);
-        if(day!=previousDay){dayGroups++;previousDay=day;}
-    }
-    // Keep the existing type size and roomy rows whenever they fit. Six events
-    // on six different days also fit above the sync footer with tighter spacing.
-    const bool compactAgenda=visibleEvents*37+dayGroups*26+std::max(0,dayGroups-1)*8>298;
-    const int rowHeight=compactAgenda?32:37,dayHeight=compactAgenda?15:26,dayGap=compactAgenda?3:8;
-    int agendaY=116;previousDay.clear();
-    for(int i=0;i<visibleEvents;i++){
-        const auto&e=s.events[i];std::string day=eventDay(e.start,v.now);
-        if(day!=previousDay){
-            if(i)agendaY+=dayGap;
-            g.top(C,agendaY,day,dayFont,CW);agendaY+=dayHeight;previousDay=day;
+    if(!trainsOnly){
+        g.line(M,272,CW);
+        if(s.eventCount==0){
+            g.text(C,132,s.calendarUpdated?"THIS WEEK":"YOUR AGENDA",smallFont,CW);
+            g.wrapped(C,185,s.calendarUpdated?"A little room in the day.":"Your calendar belongs here.",titleFont,CW,37,2);
+            g.wrapped(C,280,s.calendarUpdated?"No upcoming events in the next 7 days.":"Add your private Google Calendar subscription link.",bodyFont,CW,29,3);
         }
-        g.top(C,agendaY+3,e.allDay?"ALL DAY":clockText(e.start),timeFont,69);
-        g.top(C+93,agendaY,e.title,agendaFont,251);
-        agendaY+=rowHeight;
+        const int visibleEvents=std::min(6,s.eventCount);
+        int dayGroups=0;std::string previousDay;
+        for(int i=0;i<visibleEvents;i++){
+            std::string day=eventDay(s.events[i].start,v.now);
+            if(day!=previousDay){dayGroups++;previousDay=day;}
+        }
+        // Keep the existing type size and roomy rows whenever they fit. Six events
+        // on six different days also fit above the sync footer with tighter spacing.
+        const bool compactAgenda=visibleEvents*37+dayGroups*26+std::max(0,dayGroups-1)*8>298;
+        const int rowHeight=compactAgenda?32:37,dayHeight=compactAgenda?15:26,dayGap=compactAgenda?3:8;
+        int agendaY=116;previousDay.clear();
+        for(int i=0;i<visibleEvents;i++){
+            const auto&e=s.events[i];std::string day=eventDay(e.start,v.now);
+            if(day!=previousDay){
+                if(i)agendaY+=dayGap;
+                g.top(C,agendaY,day,dayFont,CW);agendaY+=dayHeight;previousDay=day;
+            }
+            g.top(C,agendaY+3,e.allDay?"ALL DAY":clockText(e.start),timeFont,69);
+            g.top(C+93,agendaY,e.title,agendaFont,251);
+            agendaY+=rowHeight;
+        }
+        if(s.calendarIncomplete)g.text(C,429,"Waiting for a calendar update",smallFont,CW);
+        else if(s.calendarUpdated&&!s.calendarMock&&v.now>=s.calendarValid)
+            g.text(C,429,"STALE / LAST SYNC "+clockText(s.calendarUpdated),smallFont,CW);
     }
-    if(s.calendarIncomplete)g.text(C,429,"Waiting for a calendar update",smallFont,CW);
-    else if(s.calendarUpdated&&!s.calendarMock&&v.now>=s.calendarValid)
-        g.text(C,429,"STALE / LAST SYNC "+clockText(s.calendarUpdated),smallFont,CW);
     g.line(M,443,736);
     std::string middle;int64_t updated=0;
     for(const auto& row:trains.rows)if(row.count)updated=updated?std::min(updated,row.updated):row.updated;

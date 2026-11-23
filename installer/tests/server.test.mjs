@@ -17,6 +17,7 @@ test('server restricts host, mutation origin, CSRF, request size and served file
  try{
   const page=await fetch(app.origin).then(r=>r.text());const token=page.match(/name="setup-token" content="([^"]+)"/)[1];
   assert(!page.includes('__TOKEN__'));
+  const preview=await fetch(app.origin+'/preview-trains.png');assert.equal(preview.status,200);assert.equal(preview.headers.get('content-type'),'image/png');
   assert.equal((await fetch(app.origin+'/private/config.json')).status,404);
   const wrongHost=await new Promise((resolve,reject)=>{const req=httpRequest(app.origin,{headers:{Host:'attacker.example'}},res=>{res.resume();resolve(res.statusCode);});req.on('error',reject);req.end();});
   assert.equal(wrongHost,403);

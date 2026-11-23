@@ -24,3 +24,16 @@ test('catalog contains both real Carl and Cole platforms and all choices have ID
  assert(n.directions.find(d=>d.id===1).stops.some(s=>s.id==='13911'));assert(n.directions.find(d=>d.id===0).stops.some(s=>s.id==='13909'));
  for(const route of catalog.routes)for(const d of route.directions){assert([0,1].includes(d.id));assert(d.stops.length);for(const s of d.stops)assert(/^\d+$/.test(s.id));}
 });
+test('old configs keep the agenda layout and only supported display modes are accepted',()=>{
+ assert.equal(validateConfig({version:1,mock:false,ssid:'Home'}).display_mode,'dashboard');
+ for(const display_mode of ['',null,true,1,'invalid'])assert.throws(()=>validateConfig({...DEFAULTS,ssid:'Home',display_mode}));
+});
+test('trains-only settings skip unused calendar links while keeping both directions and cadence',()=>{
+ const input={ssid:'Home',api_key:'example',rows:[{route:'N',direction:1,stop:'13911'},{route:'N',direction:0,stop:'13909'}],calendars:['unfinished link','second unfinished link'],active_start:'6',active_end:'23'};
+ const c=createConfig({...input,display_mode:'trains'},catalog);
+ assert.equal(c.display_mode,'trains');assert.equal(c.calendar_url,'');assert.equal(c.calendar_url_2,'');
+ assert.equal(c.stop,'13911');assert.equal(c.outbound_stop,'13909');assert.equal(c.transit_seconds,61);
+ assert.throws(()=>createConfig({...input,display_mode:'dashboard'},catalog));
+ const agenda=createConfig({...input,calendars:['example@group.calendar.google.com'],display_mode:'dashboard'},catalog);
+ assert.equal(agenda.display_mode,'dashboard');assert.match(agenda.calendar_url,/public\/basic\.ics$/);
+});

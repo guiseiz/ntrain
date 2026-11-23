@@ -17,7 +17,7 @@ inline void saveAgenda(CalendarCache& cache,const Snapshot& parsed,const std::st
 inline void mergeAgendas(const CalendarCache (&calendars)[2],const Config& config,int64_t now,Snapshot& result){
     std::vector<Event> events;int64_t updated=0,valid=0;bool incomplete=false,first=true;
     for(int i=0;i<2;i++){
-        const auto& url=calendarUrlAt(config,i);if(url.empty())continue;
+        const auto& url=calendarUrlAt(config,i);if(!calendarEnabled(config,i))continue;
         const auto& cache=calendars[i];
         if(cache.version!=1||cache.source!=textIdentity(url)||cache.count<0||cache.count>MAX_EVENTS||!cache.updated){incomplete=true;continue;}
         updated=updated?std::min(updated,cache.updated):cache.updated;

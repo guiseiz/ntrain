@@ -53,6 +53,7 @@ int main(int argc,char**argv){
         }
         if(input["clear_second"].as<bool>())c.calendarUrl2.clear();
         if(input["change_second"].as<bool>())c.calendarUrl2+="changed";
+        if(input["trains_only"].as<bool>())c.displayMode="trains";
         if(input["display_now"].is<int64_t>())now=input["display_now"].as<int64_t>();
         mergeAgendas(caches,c,now,s);out["updated"]=s.calendarUpdated;out["valid"]=s.calendarValid;out["incomplete"]=s.calendarIncomplete;
         for(int i=0;i<s.eventCount;i++){auto e=out["events"].add<JsonObject>();e["title"]=s.events[i].title;e["start"]=s.events[i].start;e["end"]=s.events[i].end;e["all_day"]=s.events[i].allDay;}
@@ -81,6 +82,8 @@ int main(int argc,char**argv){
         out["ok"]=parseAlerts(read(argv[2]),c,now,s);out["notice"]=s.notice;out["valid"]=s.noticeValid;
     }else if(cmd=="config"){
         out["ok"]=parseConfig(read(argv[2]),c);
+        out["display_mode"]=c.displayMode;
+        for(int i=0;i<2;i++)out["calendar_enabled"].add(calendarEnabled(c,i));
     }else if(cmd=="schedule"){
         Retry r;for(int i=0;i<10;i++){r.failure(now,70);out["delays"].add(r.next-now);}r.success(now,70);out["recovered"]=r.next-now;out["failures"]=r.failures;
         r.failure(now,70,7200);out["retry_after"]=r.next-now;
@@ -92,6 +95,7 @@ int main(int argc,char**argv){
         s=mockData(now);s.arrivals[0].observed=now-150;out["observation_expiry_wake"]=sleepSeconds(now,now+61,s);
         s=Snapshot{};s.eventCount=1;
         for(int seconds:{30,3,2,1,0,-1}){s.events[0].end=now+seconds;out["event_end_wakes"].add(sleepSeconds(now,now+1800,s));}
+        s.calendarValid=now+10;out["trains_only_wake"]=sleepSeconds(now,now+61,s,false);
         out["next_active"]=nextActive(now,c);out["active"]=activeAt(now,c);
     }else if(cmd=="preview"){
         std::string mode=argc>4?argv[4]:"mock";s=mockData(now);
@@ -103,6 +107,13 @@ int main(int argc,char**argv){
         if(mode=="setup"){s={};s.transitMock=s.calendarMock=false;v.setup=true;}
         if(mode=="night"){v.quiet=true;s.transitMock=s.calendarMock=false;}
         if(mode=="wide"){s.arrivals[0].at=now+14*60;s.arrivals[1].at=now+25*60;}
+        if(mode.rfind("trains",0)==0){
+            c.displayMode="trains";s.transitMock=s.calendarMock=false;
+            if(mode=="trains-wide"){s.arrivals[0].at=now+14*60;s.arrivals[1].at=now+25*60;}
+            if(mode=="trains-mixed"){c.outboundRoute="38R";c.outboundDirection="Ocean Beach";}
+            if(mode=="trains-stale"){v.now=now+600;v.wifi=false;}
+            if(mode=="trains-no-agenda"){s.eventCount=0;s.calendarUpdated=0;s.calendarValid=0;}
+        }
         if(mode=="agenda-finished"||mode=="agenda-filtered"){
             // A completed morning event must not occupy one of the six slots.
             for(int i=5;i>=0;i--)s.events[i+1]=s.events[i];

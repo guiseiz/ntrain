@@ -15,6 +15,12 @@ def test_combines_both_calendars_in_time_order(host,tmp_path):
     assert r['accepted']==[True,True] and not r['incomplete']
     assert [e['title'] for e in r['events']]==['Appointment','School']
 
+def test_trains_only_ignores_saved_calendar_caches(host,tmp_path):
+    data=[(0,ics(one('kids','School')),NOW),(1,ics(one('alex','Appointment')),NOW)]
+    r=agenda(host,tmp_path,data,trains_only=True,persist=True)
+    assert r['accepted']==[True,True] and not r.get('events')
+    assert r['updated']==0 and r['valid']==0 and not r['incomplete']
+
 def test_shared_invitation_is_shown_once_but_distinct_events_survive(host,tmp_path):
     shared=one('same-id','Shared event')
     r=agenda(host,tmp_path,[(0,ics(shared+one('different','Same time')),NOW),(1,ics(shared+one('other','Same time')),NOW)])

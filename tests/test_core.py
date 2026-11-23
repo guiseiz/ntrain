@@ -202,6 +202,29 @@ def test_two_calendar_configuration_is_validated(host,tmp_path):
     assert call(host,tmp_path,'config',base)['ok']
     assert not call(host,tmp_path,'config',base|{'calendar_url_2':'https://example.com/basic.ics'})['ok']
 
+def test_display_modes_preserve_legacy_default_and_disable_calendar_sources(host,tmp_path):
+    base={'version':1,'mock':False,'ssid':'Example','calendar_url':'https://calendar.google.com/calendar/ical/a/private-token/basic.ics','calendar_url_2':'https://calendar.google.com/calendar/ical/b/private-token/basic.ics'}
+    legacy=call(host,tmp_path,'config',base)
+    assert legacy['ok'] and legacy['display_mode']=='dashboard' and legacy['calendar_enabled']==[True,True]
+    trains=call(host,tmp_path,'config',base|{'display_mode':'trains'})
+    assert trains['ok'] and trains['display_mode']=='trains' and trains['calendar_enabled']==[False,False]
+    for mode in ['',None,True,1,'invalid']:
+        assert not call(host,tmp_path,'config',base|{'display_mode':mode})['ok']
+    assert call(host,tmp_path,'schedule','')['trains_only_wake']==61
+
+def test_trains_only_renders_each_direction_on_its_own_side_without_agenda(host,tmp_path):
+    from PIL import Image
+    images={}
+    for mode in ['mock','trains','trains-no-agenda','trains-stale']:
+        path=tmp_path/(mode+'.pbm')
+        subprocess.run([str(host),'preview',str(path),str(NOW),mode],check=True)
+        images[mode]=Image.open(path).copy()
+    # The original full-size direction panels move intact into equal columns.
+    for original,side in [((32,116,376,261),(32,174,376,319)),((32,289,376,434),(424,174,768,319))]:
+        assert images['mock'].crop(original).tobytes()==images['trains'].crop(side).tobytes()
+    assert images['trains'].tobytes()==images['trains-no-agenda'].tobytes()
+    assert images['trains'].crop((0,0,800,443)).tobytes()==images['trains-stale'].crop((0,0,800,443)).tobytes()
+
 @pytest.mark.parametrize('field,value',[('outbound_stop',''),('outbound_stop','a'*17),('outbound_route','a'*9),('gtfs_direction',2),('outbound_gtfs_direction',False),('outbound_direction','a'*65)])
 def test_configurable_rows_reject_bad_values(host,tmp_path,field,value):
     config={'version':1,'mock':False,'ssid':'Example',field:value}

@@ -2,6 +2,14 @@
 
 Checks recorded through November 22, 2026. This record distinguishes software, browser flashing and direct USB checks from complete first-time provisioning.
 
+## Version 0.1.3 trains-only layout — November 22, 2026
+
+- Added an explicit, backward-compatible display layout setting. Missing settings retain the original calendar layout. Trains-only mode displays one direction in each equal-width half and skips calendar fetches, agenda merge and calendar-triggered wake-ups, including when a configuration retains calendar URLs.
+- 133 native/Python tests and 18 installer tests pass. New checks cover legacy defaults, invalid modes, both disabled calendar sources, ignored persisted calendar caches, unchanged 61-second wake cadence, both direction panels at their original large numeral size, and retained predictions through stale/offline states.
+- The firmware builds successfully. Both preview layouts are rendered by the shared firmware renderer. Browser checks verified layout switching, Left side / Right side labels, hidden/disabled calendar setup, restored calendar controls on switching back, an updated loaded preview, and no browser errors. These checks used a separate local form without saving settings to a device.
+- Browser assets, four firmware regions and source were rebuilt. Package checks pass with the explicit 29-file allowlist (including the new trains-only preview), matching firmware hashes and private-credential exclusion.
+- This mode has not been provisioned onto the user's physical display. Existing device credentials, transit selections and calendar configuration were not changed. The release remains a preview; the first-time provisioning acceptance items below still apply.
+
 ## Version 0.1.2 diagnostics — November 22, 2026
 
 - The reported calendar stall had recovered before inspection. Both feeds had synced at approximately 5:57 PM Pacific on November 22. Saved configuration matched the November 19 backup; the compact calendar caches occupied 706 and 67 bytes and restored successfully after reset. No original failure history was available, so the reason for the preceding multi-day gap could not be established.

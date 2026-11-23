@@ -11,6 +11,7 @@ inline bool parseConfig(const std::string& payload,Config& config){
     if(deserializeJson(d,payload,DeserializationOption::NestingLimit(4))||d["version"]!=SCHEMA)return false;
     Config c;
     auto read=[&](const char*k,std::string& value,size_t max){if(d[k].isNull())return true;if(!d[k].is<const char*>())return false;value=d[k].as<const char*>();return value.size()<=max&&value.find('\n')==std::string::npos&&value.find('\r')==std::string::npos;};
+    if((d["display_mode"].isNull()&&!d["display_mode"].isUnbound())||!read("display_mode",c.displayMode,16)||(c.displayMode!="dashboard"&&c.displayMode!="trains"))return false;
     if(!read("ssid",c.ssid,32)||!read("password",c.password,64)||!read("api_key",c.apiKey,128)||!read("calendar_url",c.calendarUrl,2048)||!read("stop",c.stop,16)||!read("stop_name",c.stopName,64)||!read("route",c.route,8)||!read("direction_ref",c.directionRef,32)||!read("direction",c.direction,64)||!read("timezone",c.timezone,64))return false;
     if(!read("calendar_url_2",c.calendarUrl2,2048)||!validCalendarUrl(c.calendarUrl)||!validCalendarUrl(c.calendarUrl2)||c.stop.empty()||c.route.empty())return false;
     if(!read("outbound_route",c.outboundRoute,8)||!read("outbound_stop",c.outboundStop,16)||!read("outbound_direction",c.outboundDirection,64)||c.outboundStop.empty())return false;

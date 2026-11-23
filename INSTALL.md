@@ -8,23 +8,25 @@ Install Node.js 22+ from its official source, use desktop Chrome or Edge, and co
 
 This is a preview release. Browser firmware installation, reconnection and Wi-Fi scanning have passed on physical hardware; the complete first-time provisioning flow is still pending. Read the [validation record](https://github.com/guiseiz/ntrain/blob/main/docs/INSTALLER_VALIDATION.md).
 
-Run directly from the [project's GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.2):
+Run directly from the [project's GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.3):
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.2/ntrain-setup-0.1.2.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.3/ntrain-setup-0.1.3.tgz ntrain-setup
 ```
 
 Or download the `.tgz` from that release, verify it against SHA256SUMS, then run:
 
 ```sh
-npx --yes --package=./ntrain-setup-0.1.2.tgz ntrain-setup
+npx --yes --package=./ntrain-setup-0.1.3.tgz ntrain-setup
 ```
 
 From a source checkout with bundled release assets, run `npm start`. No dependency installation or compiler is needed to run setup. A local URL is printed and opened. If your default browser is Safari or Firefox, copy the printed URL into Chrome or Edge.
 
-Click **Choose USB display** and select the USB serial device, then **Install / update firmware**. A fresh device needs installation first. An existing NTrain device can use **Already installed? Connect to settings** if its firmware supports the configurable rows.
+Click **Choose USB display** and select the USB serial device, then **Install / update firmware**. A fresh device needs installation first. An existing NTrain device can use **Already installed? Connect to settings** if its firmware supports display layouts (0.1.3 or later).
 
 Complete Wi-Fi, transit rows, calendars, and active hours. “511 API key” is the full token in the 511 registration email. The transit dropdown includes Muni services, not BART, Caltrain, or regional buses. You may choose any two available line/direction/stop combinations.
+
+Under **Choose your arrivals → Display layout**, select **Trains + calendars** for the original dashboard or **Trains only — left & right** for one direction on each half. Each side shows the next two arrivals at the same large type size. Choose the same line with opposite directions, or configure two different lines. The preview follows your layout choice. Trains-only mode skips calendar setup and all calendar polling; both directions still share one transit request every 61 seconds during active hours.
 
 Paste calendar links into the local form. Private calendars require the owner's secret iCal URL. You do not have to make them public. Calendar links are optional; two feeds produce one chronological agenda.
 
@@ -40,7 +42,7 @@ After **Test Wi-Fi & save to display** succeeds, allow a minute for the first up
    From an installed release use `ntrain-setup --info --json`.
 3. Start `node installer/cli.mjs --no-open`. Keep that process alive, read the printed loopback URL, and open it in desktop Chrome or Edge. Use `--port 8766` only if a fixed HTTP port is useful; the default chooses a free port.
 4. The user selects the USB port through the browser's native chooser. Do not bypass browser permissions or invent a connected device.
-5. Help choose two rows and optional calendars. Credentials belong in the local masked form; never request them in a public issue or commit them. Do not read a browser's masked value and write the redacted placeholder back into the form.
+5. Help choose a display layout, both transit selections and, for the calendar layout, optional calendars. Credentials belong in the local masked form; never request them in a public issue or commit them. Do not read a browser's masked value and write the redacted placeholder back into the form.
 6. Install firmware if needed, test Wi-Fi, check calendar access, and save. A save acknowledgement verifies that Wi-Fi connected and settings reached the device. It does not guarantee the 511 key is valid or that the first remote sync has finished.
 7. Confirm the visible success message. Close the USB connection before using another serial tool. Stop the installer when finished.
 

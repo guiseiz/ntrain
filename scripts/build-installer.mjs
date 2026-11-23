@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 const root=dirname(dirname(fileURLToPath(import.meta.url)));
 await build({entryPoints:[join(root,'installer/src/app.mjs')],bundle:true,format:'esm',platform:'browser',target:['chrome120','edge120'],outfile:join(root,'installer/public/app.js'),minify:true,legalComments:'eof'});
 await copyFile(join(root,'preview/mock.png'),join(root,'installer/public/preview.png'));
+await copyFile(join(root,'preview/trains.png'),join(root,'installer/public/preview-trains.png'));
 const version=JSON.parse(await readFile(join(root,'package.json'))).version;
 const manifest={version,device:'reTerminal E1001',chip:'ESP32-S3',flash_size:'32MB',built_at:new Date().toISOString(),parts:[]};
 const files=[['.pio/build/e1001/bootloader.bin','bootloader.bin',0],['.pio/build/e1001/partitions.bin','partitions.bin',0x8000],['.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin','boot_app0.bin',0xe000],['.pio/build/e1001/firmware.bin','ntrain-e1001.bin',0x10000]];

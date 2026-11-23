@@ -28,6 +28,7 @@ struct Snapshot {
 };
 struct Config {
     std::string ssid, password, apiKey, calendarUrl, calendarUrl2;
+    std::string displayMode="dashboard";
     std::string stop="13911", stopName="Carl & Cole", route="N", directionRef="", direction="Downtown / Caltrain";
     std::string outboundStop="13909", outboundDirection="Ocean Beach";
     std::string outboundRoute;
@@ -44,6 +45,7 @@ inline bool sameTransitSelection(const Config& a,const Config& b){
     return true;
 }
 inline const std::string& calendarUrlAt(const Config& c,int index){return index?c.calendarUrl2:c.calendarUrl;}
+inline bool calendarEnabled(const Config& c,int index){return c.displayMode!="trains"&&!calendarUrlAt(c,index).empty();}
 inline uint64_t textIdentity(const std::string& value){
     uint64_t hash=14695981039346656037ULL;
     for(unsigned char c:value)hash=(hash^c)*1099511628211ULL;

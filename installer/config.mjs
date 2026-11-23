@@ -1,5 +1,5 @@
 const bytes = (s) => new TextEncoder().encode(s).length;
-export const DEFAULTS = Object.freeze({version:1,mock:false,stop:'13911',stop_name:'Carl & Cole',route:'N',direction_ref:'',direction:'Downtown / Caltrain',outbound_route:'',outbound_stop:'13909',outbound_direction:'Ocean Beach',gtfs_direction:1,outbound_gtfs_direction:0,timezone:'PST8PDT,M3.2.0,M11.1.0',transit_seconds:61,calendar_seconds:900,night_seconds:1800,active_start:6,active_end:23});
+export const DEFAULTS = Object.freeze({version:1,mock:false,display_mode:'dashboard',stop:'13911',stop_name:'Carl & Cole',route:'N',direction_ref:'',direction:'Downtown / Caltrain',outbound_route:'',outbound_stop:'13909',outbound_direction:'Ocean Beach',gtfs_direction:1,outbound_gtfs_direction:0,timezone:'PST8PDT,M3.2.0,M11.1.0',transit_seconds:61,calendar_seconds:900,night_seconds:1800,active_start:6,active_end:23});
 export function text(value, name, limit, required=false) {
   if (typeof value !== 'string' || /[\x00-\x1f\x7f]/.test(value) || bytes(value)>limit || (required&&!value.length)) throw new Error(`Check ${name}.`);
   return value;
@@ -18,11 +18,12 @@ export function normalizeCalendar(value) {
 }
 export function validateConfig(config) {
   if(!config||typeof config!=='object'||Array.isArray(config))throw new Error('Expected a configuration object.');
-  const limits={ssid:32,password:64,api_key:128,calendar_url:2048,calendar_url_2:2048,stop:16,stop_name:64,route:8,direction_ref:32,direction:64,outbound_route:8,outbound_stop:16,outbound_direction:64,timezone:64};
+  const limits={display_mode:16,ssid:32,password:64,api_key:128,calendar_url:2048,calendar_url_2:2048,stop:16,stop_name:64,route:8,direction_ref:32,direction:64,outbound_route:8,outbound_stop:16,outbound_direction:64,timezone:64};
   const ints={transit_seconds:[61,3600],calendar_seconds:[300,86400],night_seconds:[300,7200],active_start:[0,23],active_end:[0,23],gtfs_direction:[-1,1],outbound_gtfs_direction:[-1,1]};
   if(Object.keys(config).some(k=>!Object.hasOwn(limits,k)&&!Object.hasOwn(ints,k)&&!['version','mock'].includes(k)))throw new Error('Unexpected configuration field.');
   if(config.version!==1||typeof config.mock!=='boolean')throw new Error('Unsupported configuration version.');
   const c={...DEFAULTS,...config};
+  if(!['dashboard','trains'].includes(c.display_mode))throw new Error('Choose a display layout.');
   for(const [k,limit] of Object.entries(limits))if(k in c)text(c[k],k.replaceAll('_',' '),limit,['route','stop','outbound_stop'].includes(k)||(k==='ssid'&&!c.mock));
   for(const [k,[lo,hi]] of Object.entries(ints))if(!Number.isInteger(c[k])||c[k]<lo||c[k]>hi)throw new Error(`Check ${k.replaceAll('_',' ')}.`);
   for(const key of ['calendar_url','calendar_url_2'])if(c[key]) {
@@ -46,9 +47,10 @@ export function createConfig(input,catalog) {
   const sameStop=rows[0].stop.name===rows[1].stop.name;
   const title=input.title?.trim()||(sameStop?rows[0].stop.name:'My commute');
   const rowLabel=({direction,stop})=>shortLabel(sameStop?direction.name:`${stop.name} / ${direction.name}`);
-  return validateConfig({...DEFAULTS,ssid:input.ssid,password:input.password||'',api_key:input.api_key.trim(),stop_name:title,
+  const mode=input.display_mode===undefined?'dashboard':input.display_mode;
+  return validateConfig({...DEFAULTS,display_mode:mode,ssid:input.ssid,password:input.password||'',api_key:input.api_key.trim(),stop_name:title,
     route:rows[0].route.id,stop:rows[0].stop.id,gtfs_direction:rows[0].direction.id,direction:rowLabel(rows[0]),
     outbound_route:rows[1].route.id,outbound_stop:rows[1].stop.id,outbound_gtfs_direction:rows[1].direction.id,outbound_direction:rowLabel(rows[1]),
-    calendar_url:normalizeCalendar(input.calendars?.[0]||''),calendar_url_2:normalizeCalendar(input.calendars?.[1]||''),
+    calendar_url:mode==='trains'?'':normalizeCalendar(input.calendars?.[0]||''),calendar_url_2:mode==='trains'?'':normalizeCalendar(input.calendars?.[1]||''),
     active_start:Number(input.active_start),active_end:Number(input.active_end)});
 }
