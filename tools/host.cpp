@@ -119,7 +119,17 @@ int main(int argc,char**argv){
             copyText(s.events[5].title,"A long event title that needs truncation");
             s.calendarIncomplete=true;
         }
-        uint8_t pixels[48000];Canvas canvas(pixels);render(canvas,s,c,v);
+        TrainBoard retained;const TrainBoard* history=nullptr;
+        if(mode=="wake-cold"||mode=="wake-timer"){
+            // Model the device's RTC caches plus a newly initialized RAM
+            // snapshot. Only a cold boot used to explicitly clear demo flags.
+            retained=boardFromSnapshot(s,now);history=&retained;
+            CalendarCache caches[2];c.calendarUrl="https://calendar.google.com/calendar/ical/test/public/basic.ics";
+            saveAgenda(caches[0],s,c.calendarUrl);s=Snapshot{};
+            if(mode=="wake-cold")s.transitMock=s.calendarMock=false;
+            mergeAgendas(caches,c,now,s);
+        }
+        uint8_t pixels[48000];Canvas canvas(pixels);render(canvas,s,c,v,history);
         std::ofstream f(argv[2],std::ios::binary);f<<"P4\n800 480\n";f.write((char*)pixels,sizeof(pixels));return 0;
     }else return 2;
     serializeJson(out,std::cout);std::cout<<std::endl;

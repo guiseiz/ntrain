@@ -152,6 +152,17 @@ def test_finished_event_does_not_take_a_visible_agenda_slot(host,tmp_path):
         images.append(Image.open(path).crop((424,100,768,429)).tobytes())
     assert images[0]==images[1]
 
+def test_deep_sleep_wake_keeps_live_status_instead_of_wifi_setup(host,tmp_path):
+    from PIL import Image
+    images={}
+    for mode in ['wake-cold','wake-timer','mock']:
+        path=tmp_path/(mode+'.pbm')
+        subprocess.run([str(host),'preview',str(path),str(NOW),mode],check=True)
+        images[mode]=Image.open(path).copy()
+    assert images['wake-timer'].tobytes()==images['wake-cold'].tobytes()
+    footer=(32,443,650,480)
+    assert images['wake-timer'].crop(footer).tobytes()!=images['mock'].crop(footer).tobytes()
+
 def test_valid_cached_times_stay_visible_when_offline(host,tmp_path):
     from PIL import Image
     images=[]

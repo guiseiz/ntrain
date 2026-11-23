@@ -1,6 +1,6 @@
 {
   "name": "ntrain-setup",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "USB installer for a standalone Muni and calendar dashboard on reTerminal E1001",
   "type": "module",
   "license": "GPL-3.0-only",

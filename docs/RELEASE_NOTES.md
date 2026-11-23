@@ -1,14 +1,13 @@
-NTrain 0.1.1 improves the agenda and retained-arrival display on the monochrome reTerminal E1001.
+NTrain 0.1.2 fixes a misleading Wi-Fi setup message after deep sleep on the monochrome reTerminal E1001.
 
-- Show “last received” once in the bottom footer, keeping both train rows clear.
-- Wake promptly when an event finishes, including when its end falls during a screen refresh or network retries are delayed. Completed events leave the six-event combined agenda.
-- Store smaller independent calendar caches so updates fit alongside existing settings and survive restarts. Existing caches migrate after a successful fetch; saved Wi-Fi, transit selections and calendar subscriptions remain intact.
-- Browser flashing, automatic settings reconnection and Wi-Fi scanning now have physical E1001 validation.
+- A configured display keeps its live status after waking; it no longer shows “Waiting for Wi-Fi setup” while receiving live predictions. Demo data now explicitly enables demo mode instead of inheriting it from a newly initialized snapshot.
+- Add credential-free USB diagnostics for the current clock, battery voltage, wake/reset causes and live-mode state.
+- Retain the 61-second minimum transit cadence, both independent calendar caches, finished-event removal and the single bottom status message.
 
 Requires Node.js 22+ and desktop Chrome or Edge. E1002 is not supported. Firmware installation replaces the display's existing firmware and preserves the NTrain settings partition.
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.1/ntrain-setup-0.1.1.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.2/ntrain-setup-0.1.2.tgz ntrain-setup
 ```
 
 You can also download the `.tgz`, verify it against SHA256SUMS, and follow [INSTALL.md](https://github.com/guiseiz/ntrain/blob/main/INSTALL.md).

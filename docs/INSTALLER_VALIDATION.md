@@ -2,6 +2,14 @@
 
 Checked locally on November 14, 2026, with a Chrome chooser check on November 16 and direct USB hardware validation on November 19. This record distinguishes software and direct USB checks from a complete browser-to-device installation.
 
+## Version 0.1.2 diagnostics — November 22, 2026
+
+- The reported calendar stall had recovered before inspection. Both feeds had synced at approximately 5:57 PM Pacific on November 22. Saved configuration matched the November 19 backup; the compact calendar caches occupied 706 and 67 bytes and restored successfully after reset. No original failure history was available, so the reason for the preceding multi-day gap could not be established.
+- The 0.1.1 baseline completed three consecutive successful live transit cycles at Unix times 1795399164, 1795399225 and 1795399286, exactly 61 seconds apart. Wi-Fi signal was -33 to -37 dBm. Both rows received two predictions; the agenda merged both sources without an incomplete-source flag.
+- Identified a separate deterministic status bug: the ordinary-RAM `Snapshot` defaulted to demo mode after every deep-sleep wake, while the code cleared that flag only on cold boot. Live predictions could therefore be accompanied by “Waiting for Wi-Fi setup.” Version 0.1.2 makes live mode the default and explicitly marks generated demo data.
+- 130 native/Python tests and 16 installer tests pass. A framebuffer regression test compares cold-boot and timer-wake rendering with retained live caches, and distinguishes both from the demo footer. Firmware and bundled installer/source assets were rebuilt; package checks passed.
+- Local application image: **1,252,528 bytes**, SHA-256 `4e645199dedcee5f0559d3ab7a072da6e9e0065dcd5bb338b0a1a3d7d5fd5acd`. Credential-free serial diagnostics now include the clock, battery voltage, wake/reset causes and live-mode flag.
+
 ## Version 0.1.1 — November 19, 2026
 
 - 129 native/Python tests and 16 Node installer tests pass. New coverage checks completed events from both cached feeds, ongoing/all-day events, expiry during a panel refresh, intact retained train rows, compact-cache round trips, maximum-size caches and rejection of damaged cache data.

@@ -20,7 +20,9 @@ struct Snapshot {
     int64_t transitUpdated=0, calendarUpdated=0, transitValid=0, calendarValid=0;
     Arrival arrivals[2]; int arrivalCount=0;
     Event events[MAX_EVENTS]; int eventCount=0;
-    bool transitMock=true, calendarMock=true;
+    // Ordinary RAM is reinitialized on every deep-sleep wake. Live snapshots
+    // must stay live even when the retained train/calendar caches are reused.
+    bool transitMock=false, calendarMock=false;
     bool calendarIncomplete=false;
     char notice[112]={}; int64_t noticeValid=0;
 };
@@ -100,7 +102,7 @@ inline uint32_t fingerprint(const uint8_t* data,size_t size) {
     uint32_t h=2166136261u;for(size_t i=0;i<size;i++)h=(h^data[i])*16777619u;return h;
 }
 inline Snapshot mockData(int64_t now) {
-    Snapshot s; s.transitUpdated=s.calendarUpdated=now;
+    Snapshot s; s.transitMock=s.calendarMock=true;s.transitUpdated=s.calendarUpdated=now;
     s.transitValid=now+TRANSIT_TTL;s.calendarValid=now+CALENDAR_TTL;
     s.arrivalCount=2;s.arrivals[0]={now+240,now,false};s.arrivals[1]={now+660,now,false};
     s.eventCount=6;

@@ -8,16 +8,16 @@ Install Node.js 22+ from its official source, use desktop Chrome or Edge, and co
 
 This is a preview release. Browser firmware installation, reconnection and Wi-Fi scanning have passed on physical hardware; the complete first-time provisioning flow is still pending. Read the [validation record](https://github.com/guiseiz/ntrain/blob/main/docs/INSTALLER_VALIDATION.md).
 
-Run directly from the [project's GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.1):
+Run directly from the [project's GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.2):
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.1/ntrain-setup-0.1.1.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.2/ntrain-setup-0.1.2.tgz ntrain-setup
 ```
 
 Or download the `.tgz` from that release, verify it against SHA256SUMS, then run:
 
 ```sh
-npx --yes --package=./ntrain-setup-0.1.1.tgz ntrain-setup
+npx --yes --package=./ntrain-setup-0.1.2.tgz ntrain-setup
 ```
 
 From a source checkout with bundled release assets, run `npm start`. No dependency installation or compiler is needed to run setup. A local URL is printed and opened. If your default browser is Safari or Firefox, copy the printed URL into Chrome or Edge.
