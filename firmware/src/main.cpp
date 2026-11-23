@@ -107,7 +107,7 @@ void serialSetup(uint32_t milliseconds){
                 if(line=="PING"){Serial.println("NTRAIN_READY_V1");Serial.println("NTRAIN_WIFI_SETUP_V1");}
                 else if(line=="STATUS"){
                     JsonDocument status;status["clock"]=time(nullptr);
-                    status["firmware_version"]="0.1.3";
+                    status["firmware_version"]="0.1.4";
                     status["capabilities"].add("transit-rows-v1");
                     status["capabilities"].add("display-modes-v1");
                     status["display_mode"]=config.displayMode;
@@ -315,7 +315,7 @@ void setup(){
     }
     now=time(nullptr);mergeAgendas(calendars,config,now,snapshot);view.now=hasClock?now+DISPLAY_REFRESH_SECONDS:0;
     Serial.printf("AGENDA_READY first=%d second=%d merged=%d incomplete=%d\n",calendars[0].count,calendars[1].count,snapshot.eventCount,snapshot.calendarIncomplete);
-    Serial.printf("DEVICE_STATUS now=%lld live=%d wifi=%d active=%d battery_mv=%d wake=%d reset=%d\n",now,!snapshot.transitMock,view.wifi,active,view.batteryMv,int(esp_sleep_get_wakeup_cause()),int(esp_reset_reason()));
+    Serial.printf("DEVICE_STATUS now=%lld live=%d wifi=%d active=%d battery_mv=%d battery_pct=%d wake=%d reset=%d\n",now,!snapshot.transitMock,view.wifi,active,view.batteryMv,batteryPercent(view.batteryMv),int(esp_sleep_get_wakeup_cause()),int(esp_reset_reason()));
     if(!hasClock){snapshot.eventCount=0;snapshot.calendarValid=0;}
     if(config.apiKey.empty()&&view.wifi&&view.error.empty())view.error="Add your 511 API key";
     expire(snapshot,now+DISPLAY_REFRESH_SECONDS);draw(view);

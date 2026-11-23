@@ -84,6 +84,12 @@ int main(int argc,char**argv){
         out["ok"]=parseConfig(read(argv[2]),c);
         out["display_mode"]=c.displayMode;
         for(int i=0;i<2;i++)out["calendar_enabled"].add(calendarEnabled(c,i));
+    }else if(cmd=="battery"){
+        JsonDocument input;deserializeJson(input,read(argv[2]));
+        for(int mv:input.as<JsonArray>()){
+            int percent=batteryPercent(mv);auto item=out["readings"].add<JsonObject>();
+            item["percent"]=percent;item["label"]=batteryLabel(percent);item["fill"]=batteryFill(percent);
+        }
     }else if(cmd=="schedule"){
         Retry r;for(int i=0;i<10;i++){r.failure(now,70);out["delays"].add(r.next-now);}r.success(now,70);out["recovered"]=r.next-now;out["failures"]=r.failures;
         r.failure(now,70,7200);out["retry_after"]=r.next-now;
@@ -100,6 +106,7 @@ int main(int argc,char**argv){
     }else if(cmd=="preview"){
         std::string mode=argc>4?argv[4]:"mock";s=mockData(now);
         View v;v.now=now;v.wifi=true;v.batteryMv=3980;
+        if(argc>5)v.batteryMv=std::stoi(argv[5]);
         v.simulation=mode!="mock";
         if(mode=="stale"){v.now=now+600;v.wifi=false;s.transitMock=s.calendarMock=false;}
         if(mode=="offline"){v.wifi=false;s.transitMock=s.calendarMock=false;}

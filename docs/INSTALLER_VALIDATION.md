@@ -2,6 +2,13 @@
 
 Checks recorded through November 22, 2026. This record distinguishes software, browser flashing and direct USB checks from complete first-time provisioning.
 
+## Version 0.1.4 battery percentage — November 22, 2026
+
+- Both layouts show an estimated whole-number battery percentage beside an icon whose fill follows the charge. The conversion uses piecewise interpolation of Seeed's E-series voltage calibration points; `~` distinguishes the estimate from a measured fuel-gauge value. Missing/nonpositive readings show `?` rather than 0%.
+- 137 native/Python tests and 18 installer tests pass. New coverage includes empty, full and intermediate charge, missing readings, bounds and monotonicity across the voltage range, matching icon fill, unclipped footer text and unchanged dashboard content in both layouts. The ESP32-S3 firmware builds successfully.
+- Rebuilt both installer previews, browser assets, four firmware regions and source archive. The rendered 0.1.4 setup page loads the new battery percentage and has no browser errors. The 29-file package allowlist and credential/firmware checks pass.
+- At the user's request, only the installer was updated. No physical device was flashed or configured for this release; battery estimation has not been calibrated against a full discharge of this particular battery. The installer remains a preview.
+
 ## Version 0.1.3 trains-only layout — November 22, 2026
 
 - Added an explicit, backward-compatible display layout setting. Missing settings retain the original calendar layout. Trains-only mode displays one direction in each equal-width half and skips calendar fetches, agenda merge and calendar-triggered wake-ups, including when a configuration retains calendar URLs.

@@ -2,6 +2,7 @@
 #include "train_board.h"
 #include "fonts.h"
 #include "icons.h"
+#include "battery.h"
 #include <vector>
 #include <memory>
 
@@ -163,7 +164,10 @@ inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& 
     else if(!v.error.empty())middle=v.error;
     else middle="Waiting for first train update";
     g.top(M,457,middle,smallFont,620);
-    if(v.batteryMv>0){char b[24];snprintf(b,sizeof(b),"%.2f V",v.batteryMv/1000.0);g.top(696,457,b,smallFont,45);}
+    const int charge=batteryPercent(v.batteryMv);const std::string battery=batteryLabel(charge);
+    g.top(741-g.width(battery,timeFont),455,battery,timeFont);
     g.bitmap(747,456,batteryIcon,batteryIconWidth,batteryIconHeight);
+    g.rect(749,458,11,8,false);
+    if(charge>0)g.rect(750,459,batteryFill(charge),6);
 }
 }

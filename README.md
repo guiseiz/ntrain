@@ -14,10 +14,10 @@ You need a monochrome reTerminal E1001, a USB **data** cable, Node.js 22 or late
 
 **Preview release:** browser firmware installation, reconnection and Wi-Fi scanning have passed on physical hardware. The complete first-time provisioning flow still needs validation. See the [validation record](docs/INSTALLER_VALIDATION.md).
 
-Run the installer directly from this project's [GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.3):
+Run the installer directly from this project's [GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.4):
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.3/ntrain-setup-0.1.3.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.4/ntrain-setup-0.1.4.tgz ntrain-setup
 ```
 
 Or clone the source:
@@ -33,7 +33,7 @@ The prebuilt installer and firmware are included. End users do **not** need `npm
 From a downloaded release package:
 
 ```sh
-npx --yes --package=./ntrain-setup-0.1.3.tgz ntrain-setup
+npx --yes --package=./ntrain-setup-0.1.4.tgz ntrain-setup
 ```
 
 This uses the package attached to our GitHub release. It is not published to the npm registry under the unscoped `ntrain-setup` name.
