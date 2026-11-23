@@ -2,6 +2,14 @@
 
 Checks recorded through November 22, 2026. This record distinguishes software, browser flashing and direct USB checks from complete first-time provisioning.
 
+## Version 0.1.5 shared heading and arrival hierarchy — November 22, 2026
+
+- Matched trains-only to Figma node 101:623: one shared route/stop header, one full-width rule, direction and next departure clock, a 194 px next-arrival number, and up to three 46 px later arrivals with clocks per side. Geist Mono remains Light (300) per the user's legibility preference; the existing battery percentage remains in the shared footer.
+- Reused the local battery asset after verifying it renders pixel-identically to the Figma asset at its native 17 × 12 size. The calendar-layout previews remain byte-identical. Trains-only previews cover normal and wide values, mixed routes, two available predictions and unusually long waits with bounded fallback sizes.
+- 145 native/Python tests and 18 installer tests pass. New checks cover four sorted/deduplicated arrivals per side, unchanged two-arrival calendar mode, partial/empty/failed updates retaining older predictions, migration of saved two-arrival caches, new-cache round trips, and rejection of invalid/truncated cache records without replacing existing history.
+- The ESP32-S3 build passes. Browser assets, firmware, source and previews were rebuilt; the 29-file package allowlist, private-credential checks and firmware hashes pass. The rendered 0.1.5 setup page shows the shared-heading preview and updated help text without browser errors.
+- Installer-only update: no user device was flashed or reconfigured. The existing hardware provisioning limitations below still apply; the release remains a preview.
+
 ## Version 0.1.4 battery percentage — November 22, 2026
 
 - Both layouts show an estimated whole-number battery percentage beside an icon whose fill follows the charge. The conversion uses piecewise interpolation of Seeed's E-series voltage calibration points; `~` distinguishes the estimate from a measured fuel-gauge value. Missing/nonpositive readings show `?` rather than 0%.

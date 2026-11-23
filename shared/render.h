@@ -61,6 +61,53 @@ inline std::string eventDay(int64_t stamp,int64_t now) {
     if(a.tm_year==b.tm_year&&a.tm_yday==b.tm_yday)return "TODAY";
     char v[32];strftime(v,sizeof(v),"%a %b %e",&a);return v;
 }
+inline void renderTrainsOnly(Canvas& g,const TrainBoard& trains,const Config& c,const View& v){
+    // Figma 101:623: one shared stop header, one hero arrival per direction,
+    // and up to three later trains. Keep Light numerals for e-paper legibility.
+    const bool mixed=rowRoute(c,0)!=rowRoute(c,1);
+    std::string badge=mixed?"M":c.route;
+    const Font& badgeFont=g.width(badge,trainRouteFont)<=48?trainRouteFont:g.width(badge,trainTitleFont)<=48?trainTitleFont:bodyFont;
+    g.rect(32,48,55,55);
+    g.top(32+(55-g.width(badge,badgeFont))/2,63+(trainRouteFont.capHeight-badgeFont.capHeight)/2,badge,badgeFont,48,false);
+    g.top(105,67,c.stopName,trainTitleFont,664);
+    g.line(32,127,737);g.rect(400,152,1,272);
+    const int unit=g.width("min",unitFont);
+    const Font* hero=&trainHeroFont;const Font* later=&trainLaterFont;
+    // Both sides use the same size, shrinking only for unusually long waits.
+    for(const Font* font:{&trainHeroFont,&trainHeroCompactFont,&bigFont,&compactFont}){
+        hero=font;bool fits=true;
+        for(const auto& row:trains.rows)if(row.count&&g.width(std::to_string(row.minutes[0]),*font)+6+unit>344)fits=false;
+        if(fits)break;
+    }
+    for(const auto& row:trains.rows)for(int i=1;i<row.count;i++)
+        if(g.width(std::to_string(row.minutes[i]),*later)+6+unit>114)later=&trainLaterCompactFont;
+    for(int direction=0;direction<2;direction++){
+        const auto& row=trains.rows[direction];const int left=direction?425:32,right=left+344;
+        std::string label=direction?c.outboundDirection:c.direction;
+        if(mixed)label=rowRoute(c,direction)+" / "+label;
+        const std::string departure=row.count?clockText(row.arrivals[0].at):"";
+        g.top(left,152,label,smallFont,344-(departure.empty()?0:g.width(departure,trainTimeFont)+12));
+        if(!row.count){g.top(left,221,v.setup?"Connect Wi-Fi to begin":"Waiting for first times",bodyFont,344);continue;}
+        g.top(right-g.width(departure,trainTimeFont),152,departure,trainTimeFont);
+        std::string value=std::to_string(row.minutes[0]);
+        g.top(left,321-hero->capHeight,value,*hero,344);
+        g.top(left+g.width(value,*hero)+6,302,"min",unitFont);
+        g.line(left,340,344);
+        const int count=std::min(row.count-1,3);int widths[3]={},total=0;
+        for(int i=0;i<count;i++){
+            widths[i]=std::max(g.width(std::to_string(row.minutes[i+1]),*later)+6+unit,g.width(clockText(row.arrivals[i+1].at),trainTimeFont));
+            total+=widths[i];
+        }
+        int x=left;const int gap=count>1?(344-total)/(count-1):0;
+        for(int i=0;i<count;i++){
+            const std::string minutes=std::to_string(row.minutes[i+1]);
+            g.top(x,393-later->capHeight,minutes,*later,widths[i]);
+            g.top(x+g.width(minutes,*later)+6,374,"min",unitFont);
+            g.top(x,409,clockText(row.arrivals[i+1].at),trainTimeFont,widths[i]);
+            x+=widths[i]+gap;
+        }
+    }
+}
 inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& v,const TrainBoard* history=nullptr){
     // Keep the several-kilobyte agenda copy off the constrained ESP32 task stack.
     std::unique_ptr<Snapshot> state(new Snapshot(source));Snapshot& s=*state;
@@ -69,57 +116,55 @@ inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& 
     const TrainBoard& trains=history?*history:fallback;
     constexpr int M=32,C=424,CW=344;
     const bool trainsOnly=c.displayMode=="trains";
-    // Figma 43:455: direction rows, each with the next two arrivals.
-    // Retain the requested Inter text and Geist Mono Light (300) numerals.
-    auto header=[&](int x,const std::string& badge){
-        const Font& badgeFont=g.width(badge,routeFont)<=48?routeFont:g.width(badge,titleFont)<=48?titleFont:bodyFont;
-        g.rect(x,28,55,55);g.top(x+(55-g.width(badge,badgeFont))/2,43+(routeFont.capHeight-badgeFont.capHeight)/2,badge,badgeFont,48,false);
-        g.top(x+73,47,c.stopName,titleFont,271);
-    };
-    header(M,trainsOnly?rowRoute(c,0):rowRoute(c,0)==rowRoute(c,1)?c.route:"M");
-    if(trainsOnly)header(C,rowRoute(c,1));
+    if(trainsOnly)renderTrainsOnly(g,trains,c,v);
     else{
+        // Figma 43:455: direction rows, each with the next two arrivals.
+        // Retain the requested Inter text and Geist Mono Light (300) numerals.
+        auto header=[&](int x,const std::string& badge){
+            const Font& badgeFont=g.width(badge,routeFont)<=48?routeFont:g.width(badge,titleFont)<=48?titleFont:bodyFont;
+            g.rect(x,28,55,55);g.top(x+(55-g.width(badge,badgeFont))/2,43+(routeFont.capHeight-badgeFont.capHeight)/2,badge,badgeFont,48,false);
+            g.top(x+73,47,c.stopName,titleFont,271);
+        };
+        header(M,rowRoute(c,0)==rowRoute(c,1)?c.route:"M");
         g.top(C,32,"Family calendar",titleFont,CW);
         time_t stamp=v.now;tm local{};localtime_r(&stamp,&local);char date[40];
         strftime(date,sizeof(date),"%A, %b %e",&local);
         g.top(C,66,v.now?date:"Your upcoming week",bodyFont,CW);
-    }
-    g.line(M,99,CW);g.line(C,99,CW);g.rect(400,28,1,401);
-    const Font* number=&bigFont;int unit=g.width("min",unitFont);
-    for(const Font* font:{&bigFont,&compactFont,&narrowFont,&tinyNumberFont}){
-        number=font;bool fits=true;
-        for(const auto& row:trains.rows){
-            if(row.count&&g.width(std::to_string(row.minutes[0]),*font)>128)fits=false;
-            if(row.count>1&&g.width(std::to_string(row.minutes[1]),*font)+6+unit>172)fits=false;
-        }
-        if(fits)break;
-    }
-    for(int direction=0;direction<2;direction++){
-        const auto& row=trains.rows[direction];int y=trainsOnly?174:direction?289:116;
-        const int left=trainsOnly&&direction?C:M,right=left+CW,offset=left-M;
-        std::string label=direction?c.outboundDirection:c.direction;
-        if(!trainsOnly&&rowRoute(c,0)!=rowRoute(c,1))label=rowRoute(c,direction)+" / "+label;
-        g.top(left,y,label,smallFont,CW);
-        if(row.count){
-            std::string values[2];for(int i=0;i<row.count;i++)values[i]=std::to_string(row.minutes[i]);
-            for(int i=0;i<row.count;i++){
-                int x=offset+(i?204:M);
-                // Bottom-align smaller numerals when two multi-digit values need room.
-                g.top(x,y+103-number->capHeight,values[i],*number,CW);
-                int after=x+g.width(values[i],*number)+6;
-                bool showUnit=i||row.count==1||after+unit<=offset+144;
-                if(showUnit)g.top(after,y+86,"min",unitFont,right-after);
-                g.top(x,y+117,clockText(row.arrivals[i].at),departureFont,right-x);
-                if(i==0&&row.count>1){
-                    int arrow=offset+(showUnit?156:172);
-                    g.bitmap(arrow,y+55,trainNextIcon,trainNextIconWidth,trainNextIconHeight);
-                }
+        g.line(M,99,CW);g.line(C,99,CW);g.rect(400,28,1,401);
+        const Font* number=&bigFont;int unit=g.width("min",unitFont);
+        for(const Font* font:{&bigFont,&compactFont,&narrowFont,&tinyNumberFont}){
+            number=font;bool fits=true;
+            for(const auto& row:trains.rows){
+                if(row.count&&g.width(std::to_string(row.minutes[0]),*font)>128)fits=false;
+                if(row.count>1&&g.width(std::to_string(row.minutes[1]),*font)+6+unit>172)fits=false;
             }
-        }else{
-            g.top(left,y+50,v.setup?"Connect Wi-Fi to begin":"Waiting for first times",bodyFont,CW);
+            if(fits)break;
         }
-    }
-    if(!trainsOnly){
+        for(int direction=0;direction<2;direction++){
+            const auto& row=trains.rows[direction];int y=direction?289:116;
+            const int left=M,right=left+CW,offset=0,count=std::min(row.count,2);
+            std::string label=direction?c.outboundDirection:c.direction;
+            if(rowRoute(c,0)!=rowRoute(c,1))label=rowRoute(c,direction)+" / "+label;
+            g.top(left,y,label,smallFont,CW);
+            if(row.count){
+                std::string values[2];for(int i=0;i<count;i++)values[i]=std::to_string(row.minutes[i]);
+                for(int i=0;i<count;i++){
+                    int x=offset+(i?204:M);
+                    // Bottom-align smaller numerals when two multi-digit values need room.
+                    g.top(x,y+103-number->capHeight,values[i],*number,CW);
+                    int after=x+g.width(values[i],*number)+6;
+                    bool showUnit=i||row.count==1||after+unit<=offset+144;
+                    if(showUnit)g.top(after,y+86,"min",unitFont,right-after);
+                    g.top(x,y+117,clockText(row.arrivals[i].at),departureFont,right-x);
+                    if(i==0&&row.count>1){
+                        int arrow=offset+(showUnit?156:172);
+                        g.bitmap(arrow,y+55,trainNextIcon,trainNextIconWidth,trainNextIconHeight);
+                    }
+                }
+            }else{
+                g.top(left,y+50,v.setup?"Connect Wi-Fi to begin":"Waiting for first times",bodyFont,CW);
+            }
+        }
         g.line(M,272,CW);
         if(s.eventCount==0){
             g.text(C,132,s.calendarUpdated?"THIS WEEK":"YOUR AGENDA",smallFont,CW);
@@ -154,7 +199,8 @@ inline void render(Canvas& g,const Snapshot& source,const Config& c,const View& 
     g.line(M,443,736);
     std::string middle;int64_t updated=0;
     for(const auto& row:trains.rows)if(row.count)updated=updated?std::min(updated,row.updated):row.updated;
-    bool stale=rowStale(trains.rows[0],v.now)||rowStale(trains.rows[1],v.now);
+    const int visible=trainsOnly?MAX_TRAIN_ARRIVALS:2;
+    bool stale=rowStale(trains.rows[0],v.now,visible)||rowStale(trains.rows[1],v.now,visible);
     if(v.setup||s.transitMock)middle="Waiting for Wi-Fi setup";
     else if(updated){
         middle=(stale?"Last received ":"Updated ")+clockText(updated);

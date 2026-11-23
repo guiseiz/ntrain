@@ -17,7 +17,7 @@ int main(int argc,char**argv){
     if(argc<2)return 1;
     std::string cmd=argv[1];JsonDocument out;Snapshot s;Config c;
     int64_t now=argc>3?std::stoll(argv[3]):utcEpoch(2026,11,5,0,42);
-    if(cmd=="tripupdates"&&argc>4&&!parseConfig(read(argv[4]),c))return 2;
+    if((cmd=="tripupdates"||cmd=="retained")&&argc>4&&!parseConfig(read(argv[4]),c))return 2;
     if(cmd=="calendar"){
         std::string error;bool ok=parseCalendar(read(argv[2]),now,s,error);out["ok"]=ok;out["error"]=error;
         for(int i=0;i<s.eventCount;i++){auto e=out["events"].add<JsonObject>();e["start"]=s.events[i].start;e["end"]=s.events[i].end;e["all_day"]=s.events[i].allDay;e["title"]=s.events[i].title;}
@@ -78,6 +78,27 @@ int main(int argc,char**argv){
                 auto step=out["steps"].add<JsonObject>();step["ok"]=ok;emit(step["rows"].to<JsonArray>(),at);
             }
         }
+    }else if(cmd=="train-cache"){
+        JsonDocument input;deserializeJson(input,read(argv[2]));
+        auto fill=[&](auto& board,int count){for(int i=0;i<2;i++){
+            auto& row=board.rows[i];row.count=count;row.updated=now-60;row.received=now-50;
+            for(int j=0;j<count;j++){row.minutes[j]=4+i+j*10;row.arrivals[j]={now+row.minutes[j]*60,now-60,false};}
+            if(input["bad_count"].as<bool>())row.count=count+1;
+        }};
+        TrainBoard current;LegacyTrainBoard old;fill(current,4);fill(old,2);
+        bool legacy=input["legacy"].as<bool>();size_t length=legacy?sizeof(old):sizeof(current);
+        std::vector<uint8_t> bytes(length);std::memcpy(bytes.data(),legacy?static_cast<void*>(&old):static_cast<void*>(&current),length);
+        if(input["truncated"].as<bool>())bytes.pop_back();
+        TrainBoard baseline=boardFromSnapshot(mockData(now),now),decoded=baseline;
+        out["ok"]=decodeTrainBoard(bytes.data(),bytes.size(),decoded);
+        bool same=true;for(int i=0;i<2;i++){
+            const auto& before=baseline.rows[i];const auto& after=decoded.rows[i];
+            same&=before.count==after.count&&before.updated==after.updated&&before.received==after.received;
+            for(int j=0;j<before.count;j++)same&=before.minutes[j]==after.minutes[j]&&before.arrivals[j].at==after.arrivals[j].at&&before.arrivals[j].observed==after.arrivals[j].observed;
+        }
+        out["unchanged"]=same;
+        for(const auto& row:decoded.rows){auto item=out["rows"].add<JsonObject>();item["updated"]=row.updated;item["received"]=row.received;
+            for(int i=0;i<row.count;i++){item["minutes"].add(row.minutes[i]);item["times"].add(row.arrivals[i].at);}}
     }else if(cmd=="alerts"){
         out["ok"]=parseAlerts(read(argv[2]),c,now,s);out["notice"]=s.notice;out["valid"]=s.noticeValid;
     }else if(cmd=="config"){
@@ -138,6 +159,19 @@ int main(int argc,char**argv){
             s.calendarIncomplete=true;
         }
         TrainBoard retained;const TrainBoard* history=nullptr;
+        if(mode.rfind("trains",0)==0){
+            const int minutes[2][4]={{12,24,45,46},{8,9,15,46}};
+            retained=boardFromSnapshot(s,now);history=&retained;
+            for(int d=0;d<2;d++){
+                auto& row=retained.rows[d];row.count=mode=="trains-sparse"?2:4;
+                for(int i=0;i<row.count;i++){
+                    row.minutes[i]=minutes[d][i];
+                    if(mode=="trains-wide"&&i==0)row.minutes[i]=d?18:14;
+                    if(mode=="trains-long")row.minutes[i]=1000+i*100;
+                    row.arrivals[i]={now+row.minutes[i]*60,now,false};
+                }
+            }
+        }
         if(mode=="wake-cold"||mode=="wake-timer"){
             // Model the device's RTC caches plus a newly initialized RAM
             // snapshot. Only a cold boot used to explicitly clear demo flags.

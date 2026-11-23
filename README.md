@@ -2,7 +2,7 @@
 
 A standalone Muni arrivals and Google Calendar dashboard for the **Seeed Studio reTerminal E1001**. Two configurable transit rows, six upcoming events, and a local USB installer. After setup, the display runs on home Wi-Fi without a computer or cloud gateway.
 
-Choose **Trains + calendars**, or **Trains only** with one direction on the left and the other on the right. Both layouts show the next two arrivals for each selection and share one transit request every 61 seconds during active hours. Trains-only mode does not fetch calendars.
+Choose **Trains + calendars**, or **Trains only** with one direction on the left and the other on the right. The calendar layout shows two arrivals per direction. Trains-only uses one shared stop heading, a large next arrival on each side, and up to three later trains underneath. Both layouts share one transit request every 61 seconds during active hours. Trains-only mode does not fetch calendars.
 
 ![Dashboard preview](preview/mock.png)
 
@@ -14,10 +14,10 @@ You need a monochrome reTerminal E1001, a USB **data** cable, Node.js 22 or late
 
 **Preview release:** browser firmware installation, reconnection and Wi-Fi scanning have passed on physical hardware. The complete first-time provisioning flow still needs validation. See the [validation record](docs/INSTALLER_VALIDATION.md).
 
-Run the installer directly from this project's [GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.4):
+Run the installer directly from this project's [GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.5):
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.4/ntrain-setup-0.1.4.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.5/ntrain-setup-0.1.5.tgz ntrain-setup
 ```
 
 Or clone the source:
@@ -33,7 +33,7 @@ The prebuilt installer and firmware are included. End users do **not** need `npm
 From a downloaded release package:
 
 ```sh
-npx --yes --package=./ntrain-setup-0.1.4.tgz ntrain-setup
+npx --yes --package=./ntrain-setup-0.1.5.tgz ntrain-setup
 ```
 
 This uses the package attached to our GitHub release. It is not published to the npm registry under the unscoped `ntrain-setup` name.

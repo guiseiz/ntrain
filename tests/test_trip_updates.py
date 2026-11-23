@@ -27,11 +27,14 @@ def parse(host,tmp_path,data,now=NOW):
     path=tmp_path/'feed.pb';path.write_bytes(data)
     return json.loads(subprocess.check_output([str(host),'tripupdates',str(path),str(now)]))
 
-def history(host,tmp_path,frames):
+def history(host,tmp_path,frames,config=None):
     inputs=[]
     for i,(at,data) in enumerate(frames):
         path=tmp_path/f'feed-{i}.pb';path.write_bytes(data);inputs.append({'now':at,'path':str(path)})
-    return call(host,tmp_path,'retained',inputs)['steps']
+    cfg=None
+    if config is not None:
+        cfg=tmp_path/'history-config.json';cfg.write_text(json.dumps({'version':1,'mock':False,'ssid':'Example',**config}))
+    return call(host,tmp_path,'retained',inputs,expire=cfg)['steps']
 
 def test_actual_511_combined_feed(host,tmp_path):
     data=(Path(__file__).parent/'fixtures/511-n-tripupdates.pb').read_bytes()
@@ -98,3 +101,38 @@ def test_same_row_selection_is_populated_in_both_rows(host,tmp_path):
 def test_explicit_any_direction_accepts_stop_matching_trip(host,tmp_path):
     result=configured_parse(host,tmp_path,[prediction(direction=0)],{'gtfs_direction':-1})
     assert len(result['rows'][0]['arrivals'])==1
+
+def test_trains_only_selects_four_per_direction_while_dashboard_keeps_two(host,tmp_path):
+    predictions=[]
+    for stop,direction in [('13911',1),('13909',0)]:
+        predictions.extend(prediction(stop=stop,direction=direction,at=NOW+seconds) for seconds in [900,300,600,1200,1500,300])
+    full=configured_parse(host,tmp_path,predictions,{'display_mode':'trains'})
+    compact=configured_parse(host,tmp_path,predictions,{'display_mode':'dashboard'})
+    for row in full['rows']:
+        assert [a['at'] for a in row['arrivals']]==[NOW+300,NOW+600,NOW+900,NOW+1200]
+    for row in compact['rows']:
+        assert [a['at'] for a in row['arrivals']]==[NOW+300,NOW+600]
+
+def test_four_arrival_history_survives_partial_empty_and_failed_updates(host,tmp_path):
+    initial=feed([prediction(at=NOW+n*60) for n in [12,24,45,46]])
+    partial=feed([prediction(at=NOW+14*60,observed=NOW+61),prediction(at=NOW+25*60,observed=NOW+61)],stamp=NOW+61)
+    steps=history(host,tmp_path,[(NOW,initial),(NOW+61,partial),(NOW+62,feed([],stamp=NOW+62)),(NOW+63,b'broken')],{'display_mode':'trains'})
+    assert [a['minutes'] for a in steps[0]['rows'][0]['arrivals']]==[12,24,45,46]
+    assert [a['at'] for a in steps[1]['rows'][0]['arrivals']]==[NOW+n*60 for n in [14,25,45,46]]
+    assert [a['minutes'] for a in steps[1]['rows'][0]['arrivals']]==[13,24,45,46]
+    assert steps[2]['rows']==steps[3]['rows']==steps[1]['rows']
+
+@pytest.mark.parametrize('legacy',[True,False])
+def test_saved_train_cache_preserves_predictions_across_upgrade(host,tmp_path,legacy):
+    result=call(host,tmp_path,'train-cache',{'legacy':legacy})
+    assert result['ok']
+    for i,row in enumerate(result['rows']):
+        expected=[4+i+n*10 for n in range(2 if legacy else 4)]
+        assert row['minutes']==expected and row['times']==[NOW+n*60 for n in expected]
+        assert row['updated']==NOW-60 and row['received']==NOW-50
+
+@pytest.mark.parametrize('legacy',[True,False])
+@pytest.mark.parametrize('invalid',['bad_count','truncated'])
+def test_invalid_train_cache_cannot_replace_retained_predictions(host,tmp_path,legacy,invalid):
+    result=call(host,tmp_path,'train-cache',{'legacy':legacy,invalid:True})
+    assert not result['ok'] and result['unchanged']

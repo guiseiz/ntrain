@@ -8,16 +8,16 @@ Install Node.js 22+ from its official source, use desktop Chrome or Edge, and co
 
 This is a preview release. Browser firmware installation, reconnection and Wi-Fi scanning have passed on physical hardware; the complete first-time provisioning flow is still pending. Read the [validation record](https://github.com/guiseiz/ntrain/blob/main/docs/INSTALLER_VALIDATION.md).
 
-Run directly from the [project's GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.4):
+Run directly from the [project's GitHub release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.5):
 
 ```sh
-npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.4/ntrain-setup-0.1.4.tgz ntrain-setup
+npx --yes --package=https://github.com/guiseiz/ntrain/releases/download/v0.1.5/ntrain-setup-0.1.5.tgz ntrain-setup
 ```
 
 Or download the `.tgz` from that release, verify it against SHA256SUMS, then run:
 
 ```sh
-npx --yes --package=./ntrain-setup-0.1.4.tgz ntrain-setup
+npx --yes --package=./ntrain-setup-0.1.5.tgz ntrain-setup
 ```
 
 From a source checkout with bundled release assets, run `npm start`. No dependency installation or compiler is needed to run setup. A local URL is printed and opened. If your default browser is Safari or Firefox, copy the printed URL into Chrome or Edge.
@@ -26,7 +26,7 @@ Click **Choose USB display** and select the USB serial device, then **Install / 
 
 Complete Wi-Fi, transit rows, calendars, and active hours. “511 API key” is the full token in the 511 registration email. The transit dropdown includes Muni services, not BART, Caltrain, or regional buses. You may choose any two available line/direction/stop combinations.
 
-Under **Choose your arrivals → Display layout**, select **Trains + calendars** for the original dashboard or **Trains only — left & right** for one direction on each half. Each side shows the next two arrivals at the same large type size. Choose the same line with opposite directions, or configure two different lines. The preview follows your layout choice. Trains-only mode skips calendar setup and all calendar polling; both directions still share one transit request every 61 seconds during active hours.
+Under **Choose your arrivals → Display layout**, select **Trains + calendars** for the original dashboard or **Trains only — left & right** for one direction on each half. Trains-only uses one shared stop heading, with a large next arrival on each side and up to three later trains underneath, each with its departure time. Choose the same line with opposite directions, or configure two different lines. The preview follows your layout choice. Trains-only mode skips calendar setup and all calendar polling; both directions still share one transit request every 61 seconds during active hours.
 
 Paste calendar links into the local form. Private calendars require the owner's secret iCal URL. You do not have to make them public. Calendar links are optional; two feeds produce one chronological agenda.
 

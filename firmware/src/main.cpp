@@ -107,7 +107,7 @@ void serialSetup(uint32_t milliseconds){
                 if(line=="PING"){Serial.println("NTRAIN_READY_V1");Serial.println("NTRAIN_WIFI_SETUP_V1");}
                 else if(line=="STATUS"){
                     JsonDocument status;status["clock"]=time(nullptr);
-                    status["firmware_version"]="0.1.4";
+                    status["firmware_version"]="0.1.5";
                     status["capabilities"].add("transit-rows-v1");
                     status["capabilities"].add("display-modes-v1");
                     status["display_mode"]=config.displayMode;
@@ -192,8 +192,8 @@ void setup(){
     if(!framebuffer){Serial.println("ERROR_NO_FRAMEBUFFER");delay(10000);ESP.restart();}
     prefs.begin("ntrain",false);
     bool cold=esp_sleep_get_wakeup_cause()!=ESP_SLEEP_WAKEUP_TIMER&&esp_sleep_get_wakeup_cause()!=ESP_SLEEP_WAKEUP_EXT1;
-    if(rtcMagic!=0x4e545233||cold){
-        snapshot=Snapshot{};trains=TrainBoard{};lastTrainCache=0;transitRetry=Retry{};wifiRetry=Retry{};previousFrame=0;previousWifi=false;rtcMagic=0x4e545233;
+    if(rtcMagic!=0x4e545234||cold){
+        snapshot=Snapshot{};trains=TrainBoard{};lastTrainCache=0;transitRetry=Retry{};wifiRetry=Retry{};previousFrame=0;previousWifi=false;rtcMagic=0x4e545234;
         snapshot.transitMock=snapshot.calendarMock=false;
         // Independent source caches survive failures, deep sleep and power loss.
         for(int i=0;i<2;i++){
@@ -213,10 +213,10 @@ void setup(){
         }
         transitRetry.next=prefs.getLong64("t_next",0);
         apiPause=prefs.getLong64("api_pause",0);
-        TrainBoard cachedTrains;
-        if(prefs.getBytesLength("trains")==sizeof(cachedTrains)&&prefs.getBytes("trains",&cachedTrains,sizeof(cachedTrains))==sizeof(cachedTrains)){
-            bool valid=true;for(const auto& row:cachedTrains.rows)if(row.count<0||row.count>2)valid=false;
-            if(valid)trains=cachedTrains;
+        size_t trainBytes=prefs.getBytesLength("trains");
+        if(trainBytes==sizeof(TrainBoard)||trainBytes==sizeof(LegacyTrainBoard)){
+            uint8_t stored[sizeof(TrainBoard)];
+            if(prefs.getBytes("trains",stored,trainBytes)==trainBytes)decodeTrainBoard(stored,trainBytes,trains);
         }
     }
     auto saved=prefs.getString("config","");bool configured=parseConfig(saved.c_str(),config);

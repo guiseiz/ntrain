@@ -103,7 +103,8 @@ inline bool parseTripUpdates(const std::string& body,const Config& c,int64_t now
     for(int i=0;i<2;i++){
         auto& a=arrivals[i];std::sort(a.begin(),a.end(),[](const Arrival&x,const Arrival&y){return x.at<y.at;});
         a.erase(std::unique(a.begin(),a.end(),[](const Arrival&x,const Arrival&y){return x.at==y.at;}),a.end());
-        auto& row=parsed.rows[i];row.updated=stamp;row.count=std::min(size_t(2),a.size());
+        const size_t limit=c.displayMode=="trains"?MAX_TRAIN_ARRIVALS:2;
+        auto& row=parsed.rows[i];row.updated=stamp;row.count=std::min(limit,a.size());
         for(int j=0;j<row.count;j++)row.arrivals[j]=a[j];
     }
     result=parsed;return true;

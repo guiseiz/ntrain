@@ -213,15 +213,20 @@ def test_display_modes_preserve_legacy_default_and_disable_calendar_sources(host
     assert call(host,tmp_path,'schedule','')['trains_only_wake']==61
 
 def test_trains_only_renders_each_direction_on_its_own_side_without_agenda(host,tmp_path):
-    from PIL import Image
+    from PIL import Image,ImageChops
     images={}
-    for mode in ['mock','trains','trains-no-agenda','trains-stale']:
+    for mode in ['trains','trains-no-agenda','trains-stale','trains-sparse']:
         path=tmp_path/(mode+'.pbm')
         subprocess.run([str(host),'preview',str(path),str(NOW),mode],check=True)
-        images[mode]=Image.open(path).copy()
-    # The original full-size direction panels move intact into equal columns.
-    for original,side in [((32,116,376,261),(32,174,376,319)),((32,289,376,434),(424,174,768,319))]:
-        assert images['mock'].crop(original).tobytes()==images['trains'].crop(side).tobytes()
+        images[mode]=Image.open(path).convert('L')
+    # A single shared heading, hero predictions on both sides, and three later
+    # arrivals when the source provides them. No duplicate heading or placeholders.
+    assert not ImageChops.invert(images['trains'].crop((400,28,769,120))).getbbox()
+    for left in [32,425]:
+        box=ImageChops.invert(images['trains'].crop((left,175,left+230,330))).getbbox()
+        assert box and box[3]-box[1]>=135
+        assert ImageChops.invert(images['trains'].crop((left+230,350,left+344,425))).getbbox()
+        assert not ImageChops.invert(images['trains-sparse'].crop((left+120,350,left+344,425))).getbbox()
     assert images['trains'].tobytes()==images['trains-no-agenda'].tobytes()
     assert images['trains'].crop((0,0,800,443)).tobytes()==images['trains-stale'].crop((0,0,800,443)).tobytes()
 

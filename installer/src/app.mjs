@@ -27,10 +27,10 @@ const trainsOnly=()=>$('display-mode').value==='trains';
 function updateLayout(){const trains=trainsOnly();
  $('calendar-section').hidden=trains;$('calendar-fields').disabled=trains;
  $('rhythm-step').textContent=trains?'04':'05';
- $('transit-help').textContent=trains?'One direction on the left, the other on the right. Each shows the next two arrivals. You can also mix lines.':'Two rows, with the next two arrivals on each. Choose the same line twice for both directions, or mix lines.';
+ $('transit-help').textContent=trains?'One direction on the left, the other on the right. Each shows the next arrival and up to three after it. You can also mix lines.':'Two rows, with the next two arrivals on each. Choose the same line twice for both directions, or mix lines.';
  for(let i=0;i<2;i++){const label=trains?(i?'RIGHT SIDE':'LEFT SIDE'):`ROW ${i+1}`;$(`row-label-${i}`).textContent=label;$(`stop-${i}`).setAttribute('aria-label',`Stop for ${label.toLowerCase()}`);}
  $('layout-preview').src=trains?'/preview-trains.png':'/preview.png';
- $('layout-preview').alt=trains?'Trains-only preview: Downtown on the left and Ocean Beach on the right, each with two arrivals':'Dashboard preview with two transit rows and six calendar events';
+ $('layout-preview').alt=trains?'Trains-only preview: Downtown on the left and Ocean Beach on the right, each with one large next arrival and three smaller later arrivals':'Dashboard preview with two transit rows and six calendar events';
  $('layout-caption').textContent=(trains?'Trains only':'Trains + calendars')+' · Example layout · 800 × 480 e-paper';
  $('agenda-summary').hidden=trains;$('transit-summary').textContent=trains?'Arrivals, side by side':'Two transit rows';
  $('calendar-rhythm').hidden=trains;$('calendar-privacy').hidden=trains;
