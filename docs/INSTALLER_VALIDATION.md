@@ -1,6 +1,6 @@
 # Installer validation
 
-Checked locally on November 14, 2026, with a Chrome chooser check on November 16 and direct USB hardware validation on November 19. This record distinguishes software and direct USB checks from a complete browser-to-device installation.
+Checks recorded through November 22, 2026. This record distinguishes software, browser flashing and direct USB checks from complete first-time provisioning.
 
 ## Version 0.1.2 diagnostics — November 22, 2026
 
@@ -9,12 +9,15 @@ Checked locally on November 14, 2026, with a Chrome chooser check on November 16
 - Identified a separate deterministic status bug: the ordinary-RAM `Snapshot` defaulted to demo mode after every deep-sleep wake, while the code cleared that flag only on cold boot. Live predictions could therefore be accompanied by “Waiting for Wi-Fi setup.” Version 0.1.2 makes live mode the default and explicitly marks generated demo data.
 - 130 native/Python tests and 16 installer tests pass. A framebuffer regression test compares cold-boot and timer-wake rendering with retained live caches, and distinguishes both from the demo footer. Firmware and bundled installer/source assets were rebuilt; package checks passed.
 - Local application image: **1,252,528 bytes**, SHA-256 `4e645199dedcee5f0559d3ab7a072da6e9e0065dcd5bb338b0a1a3d7d5fd5acd`. Credential-free serial diagnostics now include the clock, battery voltage, wake/reset causes and live-mode flag.
+- Installed that image with esptool hash verification. Both calendar feeds fetched and saved successfully (706 and 67 bytes), then restored with the same event counts and fresh timestamps after a full restart. Two separately observed timer wakes reported `live=1`, connected Wi-Fi and successful transit updates; no setup-mode fallback or cache-storage errors occurred. The active saved configuration was identical before and after the update.
+- Battery voltage was 3.480–3.512 V during USB diagnostics. That measurement alone does not establish why the earlier stall occurred. These checks were performed with USB attached; a fully disconnected power test and first-time browser provisioning remain separate acceptance items.
+- [GitHub release validation](https://github.com/guiseiz/ntrain/actions/runs/45098042876) passed. The downloaded 0.1.2 archive passed checksum, allowlist, firmware integrity, source correspondence and private-credential checks; its CLI reports 0.1.2. The Linux-built application is **1,252,368 bytes**, SHA-256 `249241a0f50862f85822121cff45f056671588fad7de60f1b28aed165bdfc3d4`; hardware verification above used the local build of the same source. The release remains a preview.
 
 ## Version 0.1.1 — November 19, 2026
 
 - 129 native/Python tests and 16 Node installer tests pass. New coverage checks completed events from both cached feeds, ongoing/all-day events, expiry during a panel refresh, intact retained train rows, compact-cache round trips, maximum-size caches and rejection of damaged cache data.
 - Native framebuffer previews show the retained-arrival message only once, in the bottom footer. All train numbers, arrival clocks and row positions remain unchanged.
-- The local firmware build is **1,252,352 bytes**, SHA-256 `c01a0ef8956a8b3f34d08d92cab09175fd232ad24ce32f6e8226e015e015b4ed`. It was flashed to the E1001 with all region hashes verified. USB disconnected after the successful upload; the cache migration and restart check remain pending.
+- The local firmware build is **1,252,352 bytes**, SHA-256 `c01a0ef8956a8b3f34d08d92cab09175fd232ad24ce32f6e8226e015e015b4ed`. It was flashed to the E1001 with all region hashes verified. USB disconnected after the successful upload; cache migration and restart verification were deferred until the November 22 checks recorded above.
 - Rebuilt browser assets, bundled firmware and source archive. Package checks pass with the explicit 28-file allowlist and matching firmware hashes.
 - [GitHub's release build](https://github.com/guiseiz/ntrain/actions/runs/44505690446) also passed. Downloaded the resulting archive, verified its checksum, all four firmware hashes, source archive integrity, correspondence with the changed source files and exclusion of private credentials. Its CLI reports 0.1.1. The published Linux-built application is **1,252,192 bytes**, SHA-256 `c2c21449102ede2e36a898947a082ecfcb24d49a4986751f3fcb08d65dcd5187`; the hardware upload above used the local build of the same source. The [0.1.1 release](https://github.com/guiseiz/ntrain/releases/tag/v0.1.1) remains a preview.
 
